@@ -1,5 +1,6 @@
 from ncclient import manager
 from ncclient.transport.errors import AuthenticationError, SSHError
+from ncclient.operations.rpc import RPCError
 from socket import gaierror
 
 from xml_functions.xml_function_configure_loopback import configure_loopback_xml_renderer
@@ -30,9 +31,7 @@ class Router():
                     conf = configure_loopback_xml_renderer(loopback_ID, loopback_IP, loopback_subnet_mask)
                     m.edit_config(target = "running", config = conf, default_operation="merge")
 
-        except (gaierror):
-            raise gaierror("Invalid IP address and/or port number")
-        except (SSHError):
-            raise SSHError("Could not open socket {}:{} - could be incorrect IP address and/or port number".format(host, port))
-        except (AuthenticationError):
-            raise AuthenticationError("Incorrect username and/or password")
+        except (gaierror, SSHError) as e:
+            print ("%s: Could not open socket %s:%s - could be incorrect IP address and/or port number" % (e.__class__, host, port))
+        except (AuthenticationError) as e:
+            print("%s: Incorrect username and/or password" % (e.__class__))
