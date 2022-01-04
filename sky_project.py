@@ -42,6 +42,7 @@ class Router():
                 print("Invalid port for router socket")
                 return
 
+            #establish connection with router
             try:
                 with manager.connect_ssh(
                     host = self.host,
@@ -50,7 +51,8 @@ class Router():
                     password = self.password,
                     hostkey_verify = False,
                     device_params = {"name":"csr"}) as m:
-                        return func(self, m, *args)
+                        #run function within manager.connect_ssh
+                        return func(self, *args, m)
             except (SSHError) as e:
                 print ("%s: Could not open router socket %s:%s - could be incorrect ip address and/or port number" % (e.__class__, self.host, self.port))
             except (AuthenticationError) as e:
@@ -59,14 +61,14 @@ class Router():
         return connect_ssh_decorator_wrapper
     
     @_connect_ssh_decorator
-    def configure_loopback(self, m, loopback_id, loopback_ip, loopback_subnet_mask):
+    def configure_loopback(self, loopback_id, loopback_ip, loopback_subnet_mask, m):
         '''
         Configures a given loopback interface using given parameters
         :param self: self
-        :param m: open connection, passed from _connect_ssh_decorator
         :param loopback_id: id number for the loopback being configured
         :param loopback_ip: ip address for the loopback being configured
         :param loopback_subnet_mask: subnet mask for the loopback being configured
+        :param m: ***DO NOT DEFINE - GIVEN BY DECORATOR*** open connection, passed from _connect_ssh_decorator
         :return: None
         '''
 
@@ -91,10 +93,28 @@ class Router():
 
         try:
             conf = configure_loopback_xml_renderer(loopback_id, loopback_ip, loopback_subnet_mask)
-            m.edit_config(target = "running", config = conf, default_operation="merge")
+            m.edit_config(target = "running", config = conf, default_operation = "merge")
         except (RPCError) as e:
             print("%s: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask" % (e.__class__))
 
     @_connect_ssh_decorator
     def delete_loopback(self, m):
-        pass
+        '''
+        Deletes a given loopback interface
+        :param self: self
+        :param m: ***DO NOT DEFINE - GIVEN BY DECORATOR*** open connection, passed from _connect_ssh_decorator
+        :return: None
+        '''
+
+        conf = """
+<config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+        <interface>
+            <Loopback operation="delete">
+                <name>1</name>
+            </Loopback>
+        </interface>
+    </native>
+</config>
+"""
+        m.edit_config(target = "running", config = conf, default_operation = "merge")
