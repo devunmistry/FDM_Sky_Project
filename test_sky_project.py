@@ -132,3 +132,12 @@ class TestConfigureLoopback(TestCase):
         with mock.patch("builtins.print") as mocked_print:
             self.router.configure_loopback("192.168.0.101", 830, "cisco", "cisco", 1, "192.168.1", "255.255.255.0")
             mocked_print.assert_called_once_with("<class 'ValueError'>: Invalid ip address for loopback interface")
+
+    def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithIncorrectLoopbackIPAddressOrSubnet(self):
+        with mock.patch("builtins.print") as mocked_print:
+            self.router.configure_loopback("192.168.0.101", 830, "cisco", "cisco", 1, "192.168.0.1", "255.255.255.0")
+            mocked_print.assert_called_once_with("<class 'ncclient.operations.rpc.RPCError'>: loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask")
+
+        with mock.patch("builtins.print") as mocked_print:
+            self.router.configure_loopback("192.168.0.101", 830, "cisco", "cisco", 1, "192.168.1.1", "255.255.255.2")
+            mocked_print.assert_called_once_with("<class 'ncclient.operations.rpc.RPCError'>: loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask")

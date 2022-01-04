@@ -1,6 +1,7 @@
 from ipaddress import ip_address
 from ncclient import manager
 from ncclient.transport.errors import AuthenticationError, SSHError
+from ncclient.operations.rpc import RPCError
 from socket import gaierror
 
 from xml_functions.xml_function_configure_loopback import configure_loopback_xml_renderer
@@ -56,3 +57,5 @@ class Router():
             print ("%s: Could not open router socket %s:%s - could be incorrect ip address and/or port number" % (e.__class__, host, port))
         except (AuthenticationError) as e:
             print("%s: Incorrect router SSH username and/or password" % (e.__class__))
+        except (RPCError) as e:
+            print("%s: loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask" % (e.__class__))
