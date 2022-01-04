@@ -1,6 +1,6 @@
+from ipaddress import ip_address
 from ncclient import manager
 from ncclient.transport.errors import AuthenticationError, SSHError
-from ncclient.operations.rpc import RPCError
 from socket import gaierror
 
 from xml_functions.xml_function_configure_loopback import configure_loopback_xml_renderer
@@ -20,6 +20,17 @@ class Router():
         :param loopback_subnet_mask: subnet mask for the loopback being configured
         :return: None
         '''
+
+        try: #check router socket ip address is of valid format
+            ip_address(host)
+        except(ValueError) as e:
+            print("%s: Invalid IP address for router socket" % (e.__class__))
+            return
+
+        if type(port) is not int or port < 1 or port > 65535: #check router socket port is of valid format
+            print("Invalid port for router socket")
+            return
+
         try:
             with manager.connect_ssh(
                 host = host,
@@ -32,6 +43,6 @@ class Router():
                     m.edit_config(target = "running", config = conf, default_operation="merge")
 
         except (gaierror, SSHError) as e:
-            print ("%s: Could not open socket %s:%s - could be incorrect IP address and/or port number" % (e.__class__, host, port))
+            print ("%s: Could not open router socket %s:%s - could be incorrect IP address and/or port number" % (e.__class__, host, port))
         except (AuthenticationError) as e:
-            print("%s: Incorrect username and/or password" % (e.__class__))
+            print("%s: Incorrect router SSH username and/or password" % (e.__class__))
