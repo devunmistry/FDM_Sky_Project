@@ -1,15 +1,15 @@
 from ncclient import manager
-from ncclient.transport.errors import SSHError
+from ncclient.transport.errors import AuthenticationError, SSHError
 from socket import gaierror
 
 class Router():
+    
     def configure_loopback(self, host, port, username, password):
         '''
         Configures a given loopback interface using given parameters
         :param self: self
         :return: None
         '''
-
         try:
             with manager.connect_ssh(
                 host = host,
@@ -22,4 +22,6 @@ class Router():
         except (gaierror):
             raise gaierror("Invalid IP address and/or port number")
         except (SSHError):
-            raise SSHError("Could open socket to {}:{} - could be incorrect IP address and/or port number".format(host, port))
+            raise SSHError("Could not open socket to {}:{} - could be incorrect IP address and/or port number".format(host, port))
+        except (AuthenticationError):
+            raise AuthenticationError("Incorrect username and/or password")
