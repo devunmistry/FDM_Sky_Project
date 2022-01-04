@@ -11,7 +11,7 @@ class TestConfigureLoopback(TestCase):
         result = isinstance(self.router, Router)
         assert result == True
 
-    def test_configureLoopback_callsNcclientManagerConnectssh_whenConfigureLoopbackCalledRouter_101(self):
+    def test_configureLoopback_callsNcclientManagerConnectssh_whenConfigureLoopbackCalledRA(self):
         with mock.patch("sky_project.manager") as mocked_manager: #at instance where sky_project.manager called, replaced with mock_manager
             self.router.configure_loopback("192.168.0.101", 830, "cisco", "cisco", 1, "192.168.1.1", "255.255.255.0")
             result = mocked_manager.connect_ssh.assert_called_once_with(
@@ -23,7 +23,7 @@ class TestConfigureLoopback(TestCase):
                 device_params = {'name': 'csr'}) #asserts if mocked_manager.connect_ssh called with correct arguements
             assert result == None
 
-    def test_configureLoopback_callsNcclientManagerConnectssh_whenConfigureLoopbackCalledRouter_102(self):
+    def test_configureLoopback_callsNcclientManagerConnectssh_whenConfigureLoopbackCalledRB(self):
         with mock.patch("sky_project.manager") as mocked_manager:
             self.router.configure_loopback("192.168.0.102", 830, "router", "router", 1, "192.168.1.1", "255.255.255.0")
             mocked_manager.connect_ssh.assert_called_once_with(
@@ -136,8 +136,22 @@ class TestConfigureLoopback(TestCase):
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithIncorrectLoopbackIPAddressOrSubnet(self):
         with mock.patch("builtins.print") as mocked_print:
             self.router.configure_loopback("192.168.0.101", 830, "cisco", "cisco", 1, "192.168.0.1", "255.255.255.0")
-            mocked_print.assert_called_once_with("<class 'ncclient.operations.rpc.RPCError'>: loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask")
+            mocked_print.assert_called_once_with("<class 'ncclient.operations.rpc.RPCError'>: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask")
 
         with mock.patch("builtins.print") as mocked_print:
             self.router.configure_loopback("192.168.0.101", 830, "cisco", "cisco", 1, "192.168.1.1", "255.255.255.2")
-            mocked_print.assert_called_once_with("<class 'ncclient.operations.rpc.RPCError'>: loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask")
+            mocked_print.assert_called_once_with("<class 'ncclient.operations.rpc.RPCError'>: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask")
+
+class TestDeleteLoopback(TestCase):
+
+    def test_deleteLoopback_callsNcclientManagerConnectssh_whenDeleteLoopbackCalledRA(self):
+        router = Router()
+        with mock.patch("sky_project.manager") as mocked_manager:
+            router.delete_loopback()
+            mocked_manager.connect_ssh.assert_called_once_with(
+                host = '192.168.0.101',
+                port = 830,
+                username = 'cisco',
+                password = 'cisco',
+                hostkey_verify = False,
+                device_params = {'name': 'csr'})
