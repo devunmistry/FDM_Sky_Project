@@ -6,6 +6,7 @@ from socket import gaierror
 from sky_project import Router
 
 class TestConfigureLoopback(TestCase):
+
     def setUp(self):
         self.router = Router()
 
@@ -52,13 +53,13 @@ class TestConfigureLoopback(TestCase):
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledButCannotEstablishSSHConnection(self):
         self.assertRaisesRegex( #incorrect ip address
             SSHError,
-            "Could not open socket to 192.168.0.100:830 - could be incorrect IP address and/or port number",
+            "Could not open socket 192.168.0.100:830 - could be incorrect IP address and/or port number",
             self.router.configure_loopback,
             "192.168.0.100", "830", "cisco", "cisco")
 
         self.assertRaisesRegex( #incorrect port number
             SSHError,
-            "Could not open socket to 192.168.0.101:800 - could be incorrect IP address and/or port number",
+            "Could not open socket 192.168.0.101:800 - could be incorrect IP address and/or port number",
             self.router.configure_loopback,
             "192.168.0.101", "800", "cisco", "cisco")
     
@@ -74,3 +75,30 @@ class TestConfigureLoopback(TestCase):
             "Incorrect username and/or password",
             self.router.configure_loopback,
             "192.168.0.101", "830", "cisco", "incorrect")
+
+    def test_configureLoopback_callsEditConfig_whenConfigureLoopbackCalledRouter101Loopback1(self):
+        with mock.patch("sky_project.manager.connect_ssh") as mocked_edit_config:
+            self.router.configure_loopback("192.168.0.101", "830", "cisco", "cisco")
+            
+            conf = """
+<config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+        <interface>
+            <Loopback>
+                <name>1</name>
+                <ip>
+                    <address>
+                        <primary>
+                            <address>192.168.1.1</address>
+                            <mask>255.255.255.0</mask>
+                        </primary>
+                    </address>
+                </ip>
+            </Loopback>
+        </interface>
+    </native>
+</config>
+"""
+    
+            edit_config_call = [mock.call().__enter__().edit_config(target = "running", config = conf, default_operation="merge")]
+            mocked_edit_config.assert_has_calls(edit_config_call)
