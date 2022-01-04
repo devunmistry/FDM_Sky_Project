@@ -1,4 +1,4 @@
-from unittest import mock, TestCase
+from unittest import mock, TestCase, skip
 
 from ncclient.transport.errors import AuthenticationError, SSHError
 from socket import gaierror
@@ -16,7 +16,7 @@ class TestConfigureLoopback(TestCase):
 
     def test_configureLoopback_callsNcclientManagerConnectssh_whenConfigureLoopbackCalledRouter_101(self):
         with mock.patch("sky_project.manager") as mocked_manager: #at instance where sky_project.manager called, replaced with mock_manager
-            self.router.configure_loopback("192.168.0.101", "830", "cisco", "cisco")
+            self.router.configure_loopback("192.168.0.101", "830", "cisco", "cisco", 1, "test", "test")
             result = mocked_manager.connect_ssh.assert_called_once_with(
                 host='192.168.0.101',
                 port='830',
@@ -28,7 +28,7 @@ class TestConfigureLoopback(TestCase):
 
     def test_configureLoopback_callsNcclientManagerConnectssh_whenConfigureLoopbackCalledRouter_102(self):
         with mock.patch("sky_project.manager") as mocked_manager:
-            self.router.configure_loopback("192.168.0.102", "830", "router", "router")
+            self.router.configure_loopback("192.168.0.102", "830", "router", "router", 1, "test", "test")
             mocked_manager.connect_ssh.assert_called_once_with(
                 host='192.168.0.102',
                 port='830',
@@ -42,43 +42,43 @@ class TestConfigureLoopback(TestCase):
             gaierror,
             "Invalid IP address and/or port number",
             self.router.configure_loopback,
-            "invalid", "830", "cisco", "cisco")
+            "invalid", "830", "cisco", "cisco", 1, "test", "test")
 
         self.assertRaisesRegex( #invalid port number
             gaierror,
             "Invalid IP address and/or port number",
             self.router.configure_loopback,
-            "192.168.0.101", "invalid", "cisco", "cisco")
+            "192.168.0.101", "invalid", "cisco", "cisco", 1, "test", "test")
 
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledButCannotEstablishSSHConnection(self):
         self.assertRaisesRegex( #incorrect ip address
             SSHError,
             "Could not open socket 192.168.0.100:830 - could be incorrect IP address and/or port number",
             self.router.configure_loopback,
-            "192.168.0.100", "830", "cisco", "cisco")
+            "192.168.0.100", "830", "cisco", "cisco", 1, "test", "test")
 
         self.assertRaisesRegex( #incorrect port number
             SSHError,
             "Could not open socket 192.168.0.101:800 - could be incorrect IP address and/or port number",
             self.router.configure_loopback,
-            "192.168.0.101", "800", "cisco", "cisco")
+            "192.168.0.101", "800", "cisco", "cisco", 1, "test", "test")
     
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithIncorrectUsernameOrPassword(self):
         self.assertRaisesRegex( #incorrect username
             AuthenticationError,
             "Incorrect username and/or password",
             self.router.configure_loopback,
-            "192.168.0.101", "830", "incorrect", "cisco")
+            "192.168.0.101", "830", "incorrect", "cisco", 1, "test", "test")
 
         self.assertRaisesRegex( #incorrect password
             AuthenticationError,
             "Incorrect username and/or password",
             self.router.configure_loopback,
-            "192.168.0.101", "830", "cisco", "incorrect")
+            "192.168.0.101", "830", "cisco", "incorrect", 1, "test", "test")
 
     def test_configureLoopback_callsEditConfig_whenConfigureLoopbackCalledRouter101Loopback1(self):
         with mock.patch("sky_project.manager.connect_ssh") as mocked_edit_config:
-            self.router.configure_loopback("192.168.0.101", "830", "cisco", "cisco")
+            self.router.configure_loopback("192.168.0.101", "830", "cisco", "cisco", 1, "192.168.1.1", "255.255.255.0")
             
             conf = """
 <config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
@@ -90,6 +90,33 @@ class TestConfigureLoopback(TestCase):
                     <address>
                         <primary>
                             <address>192.168.1.1</address>
+                            <mask>255.255.255.0</mask>
+                        </primary>
+                    </address>
+                </ip>
+            </Loopback>
+        </interface>
+    </native>
+</config>
+"""
+    
+            edit_config_call = [mock.call().__enter__().edit_config(target = "running", config = conf, default_operation="merge")]
+            mocked_edit_config.assert_has_calls(edit_config_call)
+
+    def test_configureLoopback_callsEditConfig_whenConfigureLoopbackCalledRouter102Loopback2(self):
+        with mock.patch("sky_project.manager.connect_ssh") as mocked_edit_config:
+            self.router.configure_loopback("192.168.0.102", "830", "router", "router", 2, "192.168.1.2", "255.255.255.0")
+            
+            conf = """
+<config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+        <interface>
+            <Loopback>
+                <name>2</name>
+                <ip>
+                    <address>
+                        <primary>
+                            <address>192.168.1.2</address>
                             <mask>255.255.255.0</mask>
                         </primary>
                     </address>

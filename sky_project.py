@@ -4,7 +4,7 @@ from socket import gaierror
 
 class Router():
     
-    def configure_loopback(self, host, port, username, password):
+    def configure_loopback(self, host, port, username, password, loopback_ID, loopback_IP, loopback_subnet_mask):
         '''
         Configures a given loopback interface using given parameters
         :param self: self
@@ -12,6 +12,9 @@ class Router():
         :param port: port number for router ssh connection - normally 830, though have not set as default value
         :param username: username for router ssh login - privilege should have been set to 15 to allow necessary ssh access 
         :param password: password for router ssh login
+        :param loopback_ID: id number for the loopback being configured
+        :param loopback_IP: ip address for the loopback being configured
+        :param loopback_subnet_mask: subnet mask for the loopback being configured
         :return: None
         '''
         try:
@@ -27,12 +30,12 @@ class Router():
     <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
         <interface>
             <Loopback>
-                <name>1</name>
+                <name>%s</name>
                 <ip>
                     <address>
                         <primary>
-                            <address>192.168.1.1</address>
-                            <mask>255.255.255.0</mask>
+                            <address>%s</address>
+                            <mask>%s</mask>
                         </primary>
                     </address>
                 </ip>
@@ -40,7 +43,7 @@ class Router():
         </interface>
     </native>
 </config>
-"""
+""" % (loopback_ID, loopback_IP, loopback_subnet_mask)
                     m.edit_config(target = "running", config = conf, default_operation="merge")
 
         except (gaierror):
