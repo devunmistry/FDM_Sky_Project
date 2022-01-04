@@ -1,5 +1,6 @@
 from ncclient import manager
 from ncclient.transport.errors import SSHError
+from socket import gaierror
 
 class Router():
     def configure_loopback(self, host, port, username, password):
@@ -18,5 +19,7 @@ class Router():
                 hostkey_verify=False,
                 device_params={"name":"csr"}) as m:
                 pass
+        except (gaierror):
+            raise gaierror("Invalid IP address and/or port number")
         except (SSHError):
-            raise SSHError("Invalid IP address and/or port number")
+            raise SSHError("Could open socket to {}:{} - could be incorrect IP address and/or port number".format(host, port))

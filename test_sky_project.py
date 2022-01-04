@@ -1,6 +1,7 @@
 from unittest import mock, TestCase
 
 from ncclient.transport.errors import SSHError
+from socket import gaierror
 
 from sky_project import Router
 
@@ -36,14 +37,27 @@ class TestConfigureLoopback(TestCase):
                 device_params={'name': 'csr'})
 
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithInvalidIPAddressOrPort(self):
-        self.assertRaisesRegex(
-            SSHError,
+        self.assertRaisesRegex( #invalid ip address
+            gaierror,
             "Invalid IP address and/or port number",
+            self.router.configure_loopback,
+            "invalid", "830", "cisco", "cisco")
+
+        self.assertRaisesRegex( #invalid port number
+            gaierror,
+            "Invalid IP address and/or port number",
+            self.router.configure_loopback,
+            "192.168.0.101", "invalid", "cisco", "cisco")
+
+    def test_configureLoopback_handlesException_whenConfigureLoopbackCalledButCannotEstablishSSHConnection(self):
+        self.assertRaisesRegex( #incorrect ip address
+            SSHError,
+            "Could open socket to 192.168.0.100:830 - could be incorrect IP address and/or port number",
             self.router.configure_loopback,
             "192.168.0.100", "830", "cisco", "cisco")
 
-        self.assertRaisesRegex(
+        self.assertRaisesRegex( #incorrect port number
             SSHError,
-            "Invalid IP address and/or port number",
+            "Could open socket to 192.168.0.101:800 - could be incorrect IP address and/or port number",
             self.router.configure_loopback,
             "192.168.0.101", "800", "cisco", "cisco")
