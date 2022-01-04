@@ -31,8 +31,14 @@ class Router():
             print("Invalid port for router socket")
             return
 
-        if type(loopback_id) is not int or loopback_id < 0 or loopback_id > 2147483647: #check router socket port is of valid format
+        if type(loopback_id) is not int or loopback_id < 0 or loopback_id > 2147483647: #check loopback id is of valid format
             print("Invalid id for loopback interface")
+            return
+        
+        try: #check loopback ip address is of valid format
+            ip_address(loopback_ip)
+        except(ValueError) as e:
+            print("%s: Invalid ip address for loopback interface" % (e.__class__))
             return
 
         try:
