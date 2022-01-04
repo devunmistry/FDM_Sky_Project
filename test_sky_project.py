@@ -37,7 +37,7 @@ class TestConfigureLoopback(TestCase):
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithInvalidIPAddressOrPort(self):
         with mock.patch("builtins.print") as mocked_print:
             self.router.configure_loopback("invalid", 830, "cisco", "cisco", 1, "test", "test")
-            mocked_print.assert_called_once_with("<class 'ValueError'>: Invalid IP address for router socket")
+            mocked_print.assert_called_once_with("<class 'ValueError'>: Invalid ip address for router socket")
         
         with mock.patch("builtins.print") as mocked_print:
             self.router.configure_loopback("192.168.0.101", "invalid", "cisco", "cisco", 1, "test", "test")
@@ -46,11 +46,11 @@ class TestConfigureLoopback(TestCase):
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledButCannotEstablishSSHConnection(self):
         with mock.patch("builtins.print") as mocked_print:
             self.router.configure_loopback("192.168.0.100", 830, "cisco", "cisco", 1, "test", "test")
-            mocked_print.assert_called_once_with("<class 'ncclient.transport.errors.SSHError'>: Could not open router socket 192.168.0.100:830 - could be incorrect IP address and/or port number")
+            mocked_print.assert_called_once_with("<class 'ncclient.transport.errors.SSHError'>: Could not open router socket 192.168.0.100:830 - could be incorrect ip address and/or port number")
 
         with mock.patch("builtins.print") as mocked_print:
             self.router.configure_loopback("192.168.0.101", 800, "cisco", "cisco", 1, "test", "test")
-            mocked_print.assert_called_once_with("<class 'ncclient.transport.errors.SSHError'>: Could not open router socket 192.168.0.101:800 - could be incorrect IP address and/or port number")
+            mocked_print.assert_called_once_with("<class 'ncclient.transport.errors.SSHError'>: Could not open router socket 192.168.0.101:800 - could be incorrect ip address and/or port number")
    
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithIncorrectUsernameOrPassword(self):
         with mock.patch("builtins.print") as mocked_print:
@@ -114,3 +114,12 @@ class TestConfigureLoopback(TestCase):
     
             edit_config_call = [mock.call().__enter__().edit_config(target = "running", config = conf, default_operation="merge")]
             mocked_connect_ssh.assert_has_calls(edit_config_call)
+
+    def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithInvalidLoopbackID(self):
+        with mock.patch("builtins.print") as mocked_print:
+            self.router.configure_loopback("192.168.0.101", 830, "cisco", "cisco", "invalid", "192.168.1.1", "255.255.255.0")
+            mocked_print.assert_called_once_with("Invalid id for loopback interface")
+
+        with mock.patch("builtins.print") as mocked_print:
+            self.router.configure_loopback("192.168.0.101", 830, "cisco", "cisco", -1, "192.168.1.1", "255.255.255.0")
+            mocked_print.assert_called_once_with("Invalid id for loopback interface")
