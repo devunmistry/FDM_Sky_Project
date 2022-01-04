@@ -1,4 +1,4 @@
-from unittest import mock, TestCase, skip
+from unittest import mock, TestCase
 
 from ncclient.transport.errors import AuthenticationError, SSHError
 from socket import gaierror

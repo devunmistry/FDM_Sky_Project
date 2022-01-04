@@ -2,6 +2,8 @@ from ncclient import manager
 from ncclient.transport.errors import AuthenticationError, SSHError
 from socket import gaierror
 
+from xml_functions.xml_function_configure_loopback import configure_loopback_xml_renderer
+
 class Router():
     
     def configure_loopback(self, host, port, username, password, loopback_ID, loopback_IP, loopback_subnet_mask):
@@ -25,25 +27,7 @@ class Router():
                 password = password,
                 hostkey_verify=False,
                 device_params={"name":"csr"}) as m:
-                    conf = """
-<config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-    <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
-        <interface>
-            <Loopback>
-                <name>%s</name>
-                <ip>
-                    <address>
-                        <primary>
-                            <address>%s</address>
-                            <mask>%s</mask>
-                        </primary>
-                    </address>
-                </ip>
-            </Loopback>
-        </interface>
-    </native>
-</config>
-""" % (loopback_ID, loopback_IP, loopback_subnet_mask)
+                    conf = configure_loopback_xml_renderer(loopback_ID, loopback_IP, loopback_subnet_mask)
                     m.edit_config(target = "running", config = conf, default_operation="merge")
 
         except (gaierror):
