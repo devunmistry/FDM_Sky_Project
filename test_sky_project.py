@@ -226,3 +226,8 @@ class TestDeleteLoopback(TestCase):
         with mock.patch("builtins.print") as mocked_print:
             self.router_a.delete_loopback(-1)
             mocked_print.assert_called_once_with("Invalid id for loopback interface")
+
+    def test_deleteLoopback_handlesException_whenDeleteLoopbackCalledNonExistentLoopbackID(self):
+        with mock.patch("builtins.print") as mocked_print:
+            self.router_a.delete_loopback(2)
+            mocked_print.assert_called_once_with("<class 'ncclient.operations.rpc.RPCError'>: Interface deletion error - loopback id may not correspond with existing loopback interface")

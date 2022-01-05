@@ -14,10 +14,14 @@ class Router():
         self.port = port
         self.username = username
         self.password = password
+
+    ####################
+    ## Decorators     ##
+    ####################
     
     def _test_host_port_decorator(func):
         '''
-        Decorator. Tests the router host and port are of the correct format.
+        Decorator. Tests the router host and port are of the correct format. Called before Class functions.
         :param func: function to be wrapped within decorator.
         :return: test_host_port_decorator_wrapper
         '''
@@ -28,7 +32,7 @@ class Router():
             Decorator wrapper. Includes try/except for router host, and if statement for router port.
             :param self: self
             :param *args: arguements to be passed to wrapped function
-            return: func(*args)
+            :return: func(*args)
             '''
 
             #check router socket ip address is of valid format
@@ -43,13 +47,13 @@ class Router():
                 print("Invalid port for router socket")
                 return
             
-            return func(*args)
+            return func(self, *args)
         
         return test_host_port_decorator_wrapper
 
     def _connect_ssh_decorator(self, func):
         '''
-        Decorator. Opens ssh connection with router.
+        Decorator. Opens ssh connection with router. Called within Class functions.
         :param self: self
         :param func: function to be wrapped within decorator
         :return: connect_ssh_decorator_wrapper
@@ -80,7 +84,11 @@ class Router():
                 print("%s: Incorrect router SSH username and/or password" % (e.__class__))
 
         return connect_ssh_decorator_wrapper
-    
+
+    ####################
+    ## Methods        ##
+    ####################
+
     @_test_host_port_decorator
     def configure_loopback(self, loopback_id, loopback_ip, loopback_subnet_mask):
         '''
@@ -111,7 +119,7 @@ class Router():
             print("%s: Invalid subnet mask for loopback interface" % (e.__class__))
             return
 
-        #function calling edit config, to be run if above tests pass. Decorator opens ssh connection
+        # define function calling edit config, to be run if above tests pass. Decorator opens ssh connection
         @self._connect_ssh_decorator
         def _configure_loopback_call_edit_config(m):
             '''
@@ -119,6 +127,7 @@ class Router():
             :param m: ncclient.manager.connect_ssh as m, passed through by decorator
             :return: None
             '''
+
             m.edit_config(target = "running", config = conf, default_operation = "merge")
 
         try:
@@ -136,6 +145,7 @@ class Router():
         :return: None
         '''
         
+        #check loopback ip address is of valid format
         if type(loopback_id) is not int or loopback_id < 0 or loopback_id > 2147483647:
             print("Invalid id for loopback interface")
             return
@@ -148,7 +158,13 @@ class Router():
             :param m: ncclient.manager.connect_ssh as m, passed through by decorator
             :return: None
             '''
+
             m.edit_config(target = "running", config = conf, default_operation = "merge")
 
-        conf = delete_loopback_xml_renderer(loopback_id)
-        _delete_loopback_call_edit_config()
+        try:
+            conf = delete_loopback_xml_renderer(loopback_id)
+            _delete_loopback_call_edit_config()
+        except (RPCError) as e:
+            print("%s: Interface deletion error - loopback id may not correspond with existing loopback interface" % e.__class__)
+
+
