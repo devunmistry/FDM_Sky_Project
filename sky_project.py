@@ -166,5 +166,16 @@ class Router():
             _delete_loopback_call_edit_config()
         except (RPCError) as e:
             print("%s: Interface deletion error - loopback id may not correspond with existing loopback interface" % e.__class__)
-
-
+    
+    def list_interfaces(self):
+        '''
+        Calls get config
+        :param self: self
+        returns
+        '''
+        
+        @self._connect_ssh_decorator
+        def _list_interfaces_call_get_config(m):
+            print(m)
+            
+        _list_interfaces_call_get_config()

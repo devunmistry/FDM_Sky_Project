@@ -231,3 +231,17 @@ class TestDeleteLoopback(TestCase):
         with mock.patch("builtins.print") as mocked_print:
             self.router_a.delete_loopback(2)
             mocked_print.assert_called_once_with("<class 'ncclient.operations.rpc.RPCError'>: Interface deletion error - loopback id may not correspond with existing loopback interface")
+
+class TestListInterfaces(TestCase):
+    
+    def test_listInterfaces_callsNcclientConnectssh_whenListInterfacesCalledRouterA(self):
+        with mock.patch("sky_project.manager") as mocked_manager:
+            router_a = Router("192.168.0.101", 830, "cisco", "cisco")
+            router_a.list_interfaces()
+            mocked_manager.connect_ssh.assert_called_once_with(
+                host = '192.168.0.101',
+                port = 830,
+                username = 'cisco',
+                password = 'cisco',
+                hostkey_verify = False,
+                device_params = {'name': 'csr'})
