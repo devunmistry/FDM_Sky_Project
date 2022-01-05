@@ -154,7 +154,7 @@ class Router():
         @self._connect_ssh_decorator
         def _delete_loopback_call_edit_config(m):
             '''
-            Calls edit config with parameters to create/edit a loopback interface
+            Calls edit config with parameters to delete a loopback interface
             :param m: ncclient.manager.connect_ssh as m, passed through by decorator
             :return: None
             '''
@@ -171,11 +171,29 @@ class Router():
         '''
         Calls get config
         :param self: self
-        returns
+        :return:
         '''
         
         @self._connect_ssh_decorator
         def _list_interfaces_call_get_config(m):
-            print(m)
+            '''
+            Calls get config
+            :param m: ncclient.manager.connect_ssh as m, passed through by decorator
+            '''
+
+            interfaces = '''
+<interfaces xmlns="http://openconfig.net/yang/interfaces">
+    <interface>
+        <name>
+        </name>
+        <state>
+            <oper-status>
+            </oper-status>
+        </state>
+    </interface>
+</interfaces>
+'''
+
+            m.get(filter = ("subtree", interfaces))
             
         _list_interfaces_call_get_config()

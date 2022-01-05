@@ -245,3 +245,24 @@ class TestListInterfaces(TestCase):
                 password = 'cisco',
                 hostkey_verify = False,
                 device_params = {'name': 'csr'})
+    
+    def test_listInterfaces_callsGet_whenDeleteLoopbackCalledRouterA(self):
+        with mock.patch("ncclient.manager.connect_ssh") as mocked_connect_ssh:
+            router_a = Router("192.168.0.101", 830, "cisco", "cisco")
+            router_a.list_interfaces()
+
+            interfaces = '''
+<interfaces xmlns="http://openconfig.net/yang/interfaces">
+    <interface>
+        <name>
+        </name>
+        <state>
+            <oper-status>
+            </oper-status>
+        </state>
+    </interface>
+</interfaces>
+'''
+
+            get_config_call = [mock.call().__enter__().get(filter=("subtree", interfaces))]
+            mocked_connect_ssh.assert_has_calls(get_config_call)
