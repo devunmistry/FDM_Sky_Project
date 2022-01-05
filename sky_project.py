@@ -14,21 +14,21 @@ class Router():
         self.port = port
         self.username = username
         self.password = password
-
-    def _connect_ssh_decorator(self, func):
+    
+    def _test_host_port_decorator(func):
         '''
-        Decorator. Opens ssh connection with router. Wrapper function is connect_ssh_decorator_wrapper
-        :param func: function to be wrapped within decorator
-        :return: connect_ssh_decorator_wrapper
+        Decorator. Tests the router host and port are of the correct format.
+        :param func: function to be wrapped within decorator.
+        :return: test_host_port_decorator_wrapper
         '''
 
         @wraps(func)
-        def connect_ssh_decorator_wrapper(*args):
+        def test_host_port_decorator_wrapper(self, *args):
             '''
-            Decorator wrapper. Calls ncclient.manager.connect_ssh to open ssh connection with router
+            Decorator wrapper. Includes try/except for router host, and if statement for router port.
             :param self: self
             :param *args: arguements to be passed to wrapped function
-            :return: none 
+            return: func(*args)
             '''
 
             #check router socket ip address is of valid format
@@ -42,6 +42,26 @@ class Router():
             if type(self.port) is not int or self.port < 1 or self.port > 65535:
                 print("Invalid port for router socket")
                 return
+            
+            return func(*args)
+        
+        return test_host_port_decorator_wrapper
+
+    def _connect_ssh_decorator(self, func):
+        '''
+        Decorator. Opens ssh connection with router.
+        :param self: self
+        :param func: function to be wrapped within decorator
+        :return: connect_ssh_decorator_wrapper
+        '''
+
+        def connect_ssh_decorator_wrapper(*args):
+            '''
+            Decorator wrapper. Calls ncclient.manager.connect_ssh to open ssh connection with router
+            :param *args: arguements to be passed to wrapped function
+            :return: func(*args, m)
+                     m is ncclient.manager.connect_ssh
+            '''
 
             #establish connection with router
             try:
@@ -61,6 +81,7 @@ class Router():
 
         return connect_ssh_decorator_wrapper
     
+    @_test_host_port_decorator
     def configure_loopback(self, loopback_id, loopback_ip, loopback_subnet_mask):
         '''
         Configures a given loopback interface using given parameters
@@ -93,6 +114,11 @@ class Router():
         #function calling edit config, to be run if above tests pass. Decorator opens ssh connection
         @self._connect_ssh_decorator
         def _configure_loopback_call_edit_config(m):
+            '''
+            Calls edit config with parameters to create/edit a loopback interface
+            :param m: ncclient.manager.connect_ssh as m, passed through by decorator
+            :return: None
+            '''
             m.edit_config(target = "running", config = conf, default_operation = "merge")
 
         try:
@@ -101,6 +127,7 @@ class Router():
         except (RPCError) as e:
             print("%s: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask" % (e.__class__))
 
+    @_test_host_port_decorator
     def delete_loopback(self, loopback_id):
         '''
         Deletes a given loopback interface
@@ -116,6 +143,11 @@ class Router():
         #function calling edit config, to be run if above tests pass. Decorator opens ssh connection
         @self._connect_ssh_decorator
         def _delete_loopback_call_edit_config(m):
+            '''
+            Calls edit config with parameters to create/edit a loopback interface
+            :param m: ncclient.manager.connect_ssh as m, passed through by decorator
+            :return: None
+            '''
             m.edit_config(target = "running", config = conf, default_operation = "merge")
 
         conf = delete_loopback_xml_renderer(loopback_id)
