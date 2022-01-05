@@ -1,8 +1,8 @@
-def configure_loopback_xml_renderer(loopback_ID, loopback_IP, loopback_subnet_mask):
+def configure_loopback_xml_renderer(loopback_id, loopback_ip, loopback_subnet_mask):
     '''
     Generates xml string for configuring loopback interface
-    :param loopback_ID: id number for the loopback being configured
-    :param loopback_IP: ip address for the loopback being configured
+    :param loopback_id: id number for the loopback being configured
+    :param loopback_ip: ip address for the loopback being configured
     :param loopback_subnet_mask: subnet mask for the loopback being configured
     :return: xml string
     '''
@@ -25,5 +25,6 @@ def configure_loopback_xml_renderer(loopback_ID, loopback_IP, loopback_subnet_ma
         </interface>
     </native>
 </config>
-""" % (loopback_ID, loopback_IP, loopback_subnet_mask)
+""" % (loopback_id, loopback_ip, loopback_subnet_mask)
+
     return out

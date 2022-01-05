@@ -5,6 +5,7 @@ from ncclient.operations.rpc import RPCError
 from functools import wraps
 
 from xml_functions.xml_function_configure_loopback import configure_loopback_xml_renderer
+from xml_functions.xml_function_delete_loopback import delete_loopback_xml_renderer
 
 class Router():
 
@@ -94,7 +95,6 @@ class Router():
         try:
             conf = configure_loopback_xml_renderer(loopback_id, loopback_ip, loopback_subnet_mask)
             m.edit_config(target = "running", config = conf, default_operation = "merge")
-            print("connected")
         except (RPCError) as e:
             print("%s: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask" % (e.__class__))
 
@@ -107,17 +107,6 @@ class Router():
         :param m: ***DO NOT DEFINE - GIVEN BY DECORATOR*** open connection, passed from _connect_ssh_decorator
         :return: None
         '''
-
-        conf = """
-<config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
-    <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
-        <interface>
-            <Loopback operation="delete">
-                <name>%s</name>
-            </Loopback>
-        </interface>
-    </native>
-</config>
-""" % (loopback_id)
-
+        
+        conf = delete_loopback_xml_renderer(loopback_id)
         m.edit_config(target = "running", config = conf, default_operation = "merge")
