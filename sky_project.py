@@ -108,5 +108,9 @@ class Router():
         :return: None
         '''
         
+        if type(loopback_id) is not int or loopback_id < 0 or loopback_id > 2147483647:
+            print("Invalid id for loopback interface")
+            return
+
         conf = delete_loopback_xml_renderer(loopback_id)
         m.edit_config(target = "running", config = conf, default_operation = "merge")

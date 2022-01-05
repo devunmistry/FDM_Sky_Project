@@ -216,3 +216,13 @@ class TestDeleteLoopback(TestCase):
 """
             edit_config_call = [mock.call().__enter__().edit_config(target = "running", config = conf, default_operation="merge")]
             mocked_connect_ssh.assert_has_calls(edit_config_call)
+
+    def test_deleteLoopback_handlesException_whenDeleteLoopbackCalledWithInvalidTextLoopbackID(self):
+        with mock.patch("builtins.print") as mocked_print:
+            self.router_a.delete_loopback("one")
+            mocked_print.assert_called_once_with("Invalid id for loopback interface")
+    
+    def test_deleteLoopback_handlesException_whenDeleteLoopbackCalledWithInvalidNumLoopbackID(self):
+        with mock.patch("builtins.print") as mocked_print:
+            self.router_a.delete_loopback(-1)
+            mocked_print.assert_called_once_with("Invalid id for loopback interface")
