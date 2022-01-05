@@ -15,7 +15,7 @@ class Router():
         self.username = username
         self.password = password
 
-    def _connect_ssh_decorator(func):
+    def _connect_ssh_decorator(self, func):
         '''
         Decorator. Opens ssh connection with router. Wrapper function is connect_ssh_decorator_wrapper
         :param func: function to be wrapped within decorator
@@ -23,7 +23,7 @@ class Router():
         '''
 
         @wraps(func)
-        def connect_ssh_decorator_wrapper(self, *args):
+        def connect_ssh_decorator_wrapper(*args):
             '''
             Decorator wrapper. Calls ncclient.manager.connect_ssh to open ssh connection with router
             :param self: self
@@ -53,7 +53,7 @@ class Router():
                     hostkey_verify = False,
                     device_params = {"name":"csr"}) as m:
                         #run function within manager.connect_ssh
-                        return func(self, *args, m)
+                        return func(*args, m)
             except (SSHError) as e:
                 print ("%s: Could not open router socket %s:%s - could be incorrect ip address and/or port number" % (e.__class__, self.host, self.port))
             except (AuthenticationError) as e:
@@ -61,15 +61,13 @@ class Router():
 
         return connect_ssh_decorator_wrapper
     
-    @_connect_ssh_decorator
-    def configure_loopback(self, loopback_id, loopback_ip, loopback_subnet_mask, m):
+    def configure_loopback(self, loopback_id, loopback_ip, loopback_subnet_mask):
         '''
         Configures a given loopback interface using given parameters
         :param self: self
         :param loopback_id: id number for the loopback being configured
         :param loopback_ip: ip address for the loopback being configured
         :param loopback_subnet_mask: subnet mask for the loopback being configured
-        :param m: ***DO NOT DEFINE - GIVEN BY DECORATOR*** open connection, passed from _connect_ssh_decorator
         :return: None
         '''
 
@@ -92,25 +90,33 @@ class Router():
             print("%s: Invalid subnet mask for loopback interface" % (e.__class__))
             return
 
+        #function calling edit config, to be run if above tests pass. Decorator opens ssh connection
+        @self._connect_ssh_decorator
+        def _configure_loopback_call_edit_config(m):
+            m.edit_config(target = "running", config = conf, default_operation = "merge")
+
         try:
             conf = configure_loopback_xml_renderer(loopback_id, loopback_ip, loopback_subnet_mask)
-            m.edit_config(target = "running", config = conf, default_operation = "merge")
+            _configure_loopback_call_edit_config()
         except (RPCError) as e:
             print("%s: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask" % (e.__class__))
 
-    @_connect_ssh_decorator
-    def delete_loopback(self, loopback_id, m):
+    def delete_loopback(self, loopback_id):
         '''
         Deletes a given loopback interface
         :param self: self
         :param loopback_id: id number for the loopback being deleted
-        :param m: ***DO NOT DEFINE - GIVEN BY DECORATOR*** open connection, passed from _connect_ssh_decorator
         :return: None
         '''
         
         if type(loopback_id) is not int or loopback_id < 0 or loopback_id > 2147483647:
             print("Invalid id for loopback interface")
             return
+        
+        #function calling edit config, to be run if above tests pass. Decorator opens ssh connection
+        @self._connect_ssh_decorator
+        def _delete_loopback_call_edit_config(m):
+            m.edit_config(target = "running", config = conf, default_operation = "merge")
 
         conf = delete_loopback_xml_renderer(loopback_id)
-        m.edit_config(target = "running", config = conf, default_operation = "merge")
+        _delete_loopback_call_edit_config()
