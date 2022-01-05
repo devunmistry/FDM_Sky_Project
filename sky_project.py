@@ -6,6 +6,7 @@ from functools import wraps
 
 from xml_functions.xml_function_configure_loopback import configure_loopback_xml_renderer
 from xml_functions.xml_function_delete_loopback import delete_loopback_xml_renderer
+from xml_functions.xml_function_list_interfaces import list_interfaces_xml_renderer
 
 class Router():
 
@@ -167,6 +168,7 @@ class Router():
         except (RPCError) as e:
             print("%s: Interface deletion error - loopback id may not correspond with existing loopback interface" % e.__class__)
     
+    @_test_host_port_decorator
     def list_interfaces(self):
         '''
         Calls get config
@@ -181,19 +183,6 @@ class Router():
             :param m: ncclient.manager.connect_ssh as m, passed through by decorator
             '''
 
-            interfaces = '''
-<interfaces xmlns="http://openconfig.net/yang/interfaces">
-    <interface>
-        <name>
-        </name>
-        <state>
-            <oper-status>
-            </oper-status>
-        </state>
-    </interface>
-</interfaces>
-'''
-
-            m.get(filter = ("subtree", interfaces))
+            m.get(filter = ("subtree", list_interfaces_xml_renderer))
             
         _list_interfaces_call_get_config()
