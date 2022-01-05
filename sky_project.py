@@ -99,10 +99,11 @@ class Router():
             print("%s: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask" % (e.__class__))
 
     @_connect_ssh_decorator
-    def delete_loopback(self, m):
+    def delete_loopback(self, loopback_id, m):
         '''
         Deletes a given loopback interface
         :param self: self
+        :param loopback_id: id number for the loopback being deleted
         :param m: ***DO NOT DEFINE - GIVEN BY DECORATOR*** open connection, passed from _connect_ssh_decorator
         :return: None
         '''
@@ -112,10 +113,11 @@ class Router():
     <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
         <interface>
             <Loopback operation="delete">
-                <name>1</name>
+                <name>%s</name>
             </Loopback>
         </interface>
     </native>
 </config>
-"""
+""" % (loopback_id)
+
         m.edit_config(target = "running", config = conf, default_operation = "merge")

@@ -172,7 +172,7 @@ class TestDeleteLoopback(TestCase):
 
     def test_deleteLoopback_callsNcclientManagerConnectssh_whenDeleteLoopbackCalledRouterA(self):
         with mock.patch("sky_project.manager") as mocked_manager:
-            self.router_a.delete_loopback()
+            self.router_a.delete_loopback(1)
             mocked_manager.connect_ssh.assert_called_once_with(
                 host = '192.168.0.101',
                 port = 830,
@@ -183,7 +183,7 @@ class TestDeleteLoopback(TestCase):
 
     def test_deleteLoopback_callsEditConfig_whenDeleteLoopbackCalledRouterALoopback1(self):
         with mock.patch("ncclient.manager.connect_ssh") as mocked_connect_ssh:
-            self.router_a.delete_loopback()
+            self.router_a.delete_loopback(1)
 
             conf = """
 <config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
@@ -191,6 +191,24 @@ class TestDeleteLoopback(TestCase):
         <interface>
             <Loopback operation="delete">
                 <name>1</name>
+            </Loopback>
+        </interface>
+    </native>
+</config>
+"""
+            edit_config_call = [mock.call().__enter__().edit_config(target = "running", config = conf, default_operation="merge")]
+            mocked_connect_ssh.assert_has_calls(edit_config_call)
+
+    def test_deleteLoopback_callsEditConfig_whenDeleteLoopbackCalledRouterALoopback2(self):
+        with mock.patch("ncclient.manager.connect_ssh") as mocked_connect_ssh:
+            self.router_a.delete_loopback(2)
+
+            conf = """
+<config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+    <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+        <interface>
+            <Loopback operation="delete">
+                <name>2</name>
             </Loopback>
         </interface>
     </native>
