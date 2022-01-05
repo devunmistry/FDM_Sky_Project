@@ -94,6 +94,7 @@ class Router():
         try:
             conf = configure_loopback_xml_renderer(loopback_id, loopback_ip, loopback_subnet_mask)
             m.edit_config(target = "running", config = conf, default_operation = "merge")
+            print("connected")
         except (RPCError) as e:
             print("%s: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask" % (e.__class__))
 

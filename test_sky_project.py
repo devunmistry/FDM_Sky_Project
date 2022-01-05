@@ -8,7 +8,6 @@ class TestConfigureLoopback(TestCase):
         self.router_a = Router("192.168.0.101", 830, "cisco", "cisco")
         self.router_b = Router("192.168.0.102", 830, "router", "router")
 
-
     def test_Router_createsRouterObject_whenRouterObjectInstantiated(self):
         result = isinstance(self.router_a, Router)
         assert result == True
@@ -126,11 +125,12 @@ class TestConfigureLoopback(TestCase):
             edit_config_call = [mock.call().__enter__().edit_config(target = "running", config = conf, default_operation="merge")]
             mocked_connect_ssh.assert_has_calls(edit_config_call)
 
-    def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithInvalidLoopbackID(self):
+    def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithInvalidTextLoopbackID(self):
         with mock.patch("builtins.print") as mocked_print:
             self.router_a.configure_loopback("invalid", "192.168.1.1", "255.255.255.0")
             mocked_print.assert_called_once_with("Invalid id for loopback interface")
 
+    def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithInvalidNumLoopbackID(self):
         with mock.patch("builtins.print") as mocked_print:
             self.router_a.configure_loopback(-1, "192.168.1.1", "255.255.255.0")
             mocked_print.assert_called_once_with("Invalid id for loopback interface")
@@ -167,10 +167,12 @@ class TestConfigureLoopback(TestCase):
 
 class TestDeleteLoopback(TestCase):
 
+    def setUp(self):
+        self.router_a = Router("192.168.0.101", 830, "cisco", "cisco")
+
     def test_deleteLoopback_callsNcclientManagerConnectssh_whenDeleteLoopbackCalledRouterA(self):
-        router = Router("192.168.0.101", 830, "cisco", "cisco")
         with mock.patch("sky_project.manager") as mocked_manager:
-            router.delete_loopback()
+            self.router_a.delete_loopback()
             mocked_manager.connect_ssh.assert_called_once_with(
                 host = '192.168.0.101',
                 port = 830,
@@ -180,9 +182,8 @@ class TestDeleteLoopback(TestCase):
                 device_params = {'name': 'csr'})
 
     def test_deleteLoopback_callsEditConfig_whenDeleteLoopbackCalledRouterALoopback1(self):
-        router = Router("192.168.0.101", 830, "cisco", "cisco")
         with mock.patch("ncclient.manager.connect_ssh") as mocked_connect_ssh:
-            router.delete_loopback()
+            self.router_a.delete_loopback()
 
             conf = """
 <config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
