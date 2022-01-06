@@ -1,8 +1,9 @@
 from ipaddress import ip_address
+from functools import wraps
 from ncclient import manager
 from ncclient.transport.errors import AuthenticationError, SSHError
 from ncclient.operations.rpc import RPCError 
-from functools import wraps
+from xml.dom.minidom import parseString
 
 from xml_functions.xml_function_configure_loopback import configure_loopback_xml_renderer
 from xml_functions.xml_function_delete_loopback import delete_loopback_xml_renderer
@@ -181,8 +182,14 @@ class Router():
             '''
             Calls get config
             :param m: ncclient.manager.connect_ssh as m, passed through by decorator
+            :return: xml of all listed interfaces
             '''
 
-            m.get(filter = ("subtree", list_interfaces_xml_renderer))
-            
-        _list_interfaces_call_get_config()
+            out = m.get(filter = ("subtree", list_interfaces_xml_renderer))
+            return out
+
+        interface_xml = _list_interfaces_call_get_config()
+        print(parseString(str(interface_xml)).toprettyxml())
+
+router = Router("192.168.0.101", 830, "cisco", "cisco")
+router.list_interfaces()
