@@ -135,7 +135,7 @@ class Router():
 
         # define function calling edit config, to be run if above tests pass. Decorator opens ssh connection
         @self._connect_ssh_decorator
-        def _configure_loopback_call_edit_config(m):
+        def configure_loopback_call_edit_config(m):
             '''
             Calls edit config with parameters to create/edit a loopback interface
             :param m: ncclient.manager.connect_ssh as m, passed through by decorator
@@ -148,7 +148,7 @@ class Router():
             conf = configure_loopback_xml_renderer(loopback_id, loopback_ip, loopback_subnet_mask)
             if self.dry_run == 1:
                 return conf
-            _configure_loopback_call_edit_config()
+            configure_loopback_call_edit_config()
         except (RPCError) as e:
             print("%s: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask" % (e.__class__))
 
@@ -168,7 +168,7 @@ class Router():
         
         #function calling edit config, to be run if above tests pass. Decorator opens ssh connection
         @self._connect_ssh_decorator
-        def _delete_loopback_call_edit_config(m):
+        def delete_loopback_call_edit_config(m):
             '''
             Calls edit config with parameters to delete a loopback interface
             :param m: ncclient.manager.connect_ssh as m, passed through by decorator
@@ -179,7 +179,9 @@ class Router():
 
         try:
             conf = delete_loopback_xml_renderer(loopback_id)
-            _delete_loopback_call_edit_config()
+            if self.dry_run == 1:
+                return conf
+            delete_loopback_call_edit_config()
         except (RPCError) as e:
             print("%s: Interface deletion error - loopback id may not correspond with existing loopback interface" % e.__class__)
     
@@ -192,7 +194,7 @@ class Router():
         '''
         
         @self._connect_ssh_decorator
-        def _list_interfaces_call_get_config(m):
+        def list_interfaces_call_get_config(m):
             '''
             Calls get config
             :param m: ncclient.manager.connect_ssh as m, passed through by decorator
@@ -202,4 +204,4 @@ class Router():
             interface_xml = m.get(filter = ("subtree", list_interfaces_xml_renderer))
             print(parseString(str(interface_xml)).toprettyxml())
         
-        _list_interfaces_call_get_config()
+        list_interfaces_call_get_config()

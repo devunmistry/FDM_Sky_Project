@@ -2,6 +2,7 @@ from unittest import mock, skip, TestCase
 from xml.dom.minidom import parseString
 
 from sky_project import Router
+from xml_functions.xml_function_delete_loopback import delete_loopback_xml_renderer
 
 class TestConfigureLoopback(TestCase):
 
@@ -298,5 +299,14 @@ class TestDryRun(TestCase):
         
         from xml_functions.xml_function_configure_loopback import configure_loopback_xml_renderer
         conf = configure_loopback_xml_renderer(1, "192.168.1.1", "255.255.255.0")
+
+        assert result == conf
+    
+    def test_dryRun_returnConf_whenDeleteLoopbackCalledWithDryRun1(self):
+        self.router_a.change_dry_run()
+        result = self.router_a.delete_loopback(1)
+
+        from xml_functions.xml_function_delete_loopback import delete_loopback_xml_renderer
+        conf = delete_loopback_xml_renderer(1)
 
         assert result == conf
