@@ -89,7 +89,7 @@ class Router():
         return connect_ssh_decorator_wrapper
 
     ####################
-    ## Class attribute focused Methods ##
+    ## Getters & setters ##
     ####################
 
     def change_dry_run(self):
@@ -146,6 +146,8 @@ class Router():
 
         try:
             conf = configure_loopback_xml_renderer(loopback_id, loopback_ip, loopback_subnet_mask)
+            if self.dry_run == 1:
+                return conf
             _configure_loopback_call_edit_config()
         except (RPCError) as e:
             print("%s: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask" % (e.__class__))

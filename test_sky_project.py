@@ -292,4 +292,11 @@ class TestDryRun(TestCase):
             assert result == 1
             mocked_print.assert_called_once_with("dry_run = 1: Payload will be returned to user")
 
-    #def test_dryRun_returnsConf_whenConfigureLoopbackCalledWithDryRun1(self):
+    def test_dryRun_returnsConf_whenConfigureLoopbackCalledWithDryRun1(self):
+        self.router_a.change_dry_run()
+        result = self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.0")
+        
+        from xml_functions.xml_function_configure_loopback import configure_loopback_xml_renderer
+        conf = configure_loopback_xml_renderer(1, "192.168.1.1", "255.255.255.0")
+
+        assert result == conf
