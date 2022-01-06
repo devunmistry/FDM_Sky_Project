@@ -42,13 +42,11 @@ class Router():
             try:
                 ip_address(self.host)
             except(ValueError) as e:
-                print("%s: Invalid ip address for router socket" % (e.__class__))
-                return
+                return "%s: Invalid ip address for router socket" % (e.__class__)
 
             #check router socket port is of valid format
             if type(self.port) is not int or self.port < 1 or self.port > 65535:
-                print("Invalid port for router socket")
-                return
+                return "Invalid port for router socket"
             
             return func(self, *args)
         
@@ -82,9 +80,9 @@ class Router():
                         #run function within manager.connect_ssh
                         return func(*args, m)
             except (SSHError) as e:
-                print ("%s: Could not open router socket %s:%s - could be incorrect ip address and/or port number" % (e.__class__, self.host, self.port))
+                return "%s: Could not open router socket %s:%s - could be incorrect ip address and/or port number" % (e.__class__, self.host, self.port)
             except (AuthenticationError) as e:
-                print("%s: Incorrect router SSH username and/or password" % (e.__class__))
+                return "%s: Incorrect router SSH username and/or password" % (e.__class__)
 
         return connect_ssh_decorator_wrapper
 
@@ -95,9 +93,9 @@ class Router():
     def change_dry_run(self):
         self.dry_run = abs(self.dry_run - 1)
         if self.dry_run == 0:
-            print("dry_run = 0: Payload will be sent to router")
+            return "dry_run = 0: Payload will be sent to router"
         if self.dry_run == 1:
-            print("dry_run = 1: Payload will be returned to user")
+            return "dry_run = 1: Payload will be returned to user"
 
     ####################
     ## Methods        ##
@@ -111,27 +109,24 @@ class Router():
         :param loopback_id: id number for the loopback being configured
         :param loopback_ip: ip address for the loopback being configured
         :param loopback_subnet_mask: subnet mask for the loopback being configured
-        :return: None
+        :return: configure_loopback_call_edit_config(), which calls m.edit_config(target = "running", config = conf, default_operation = "merge")
         '''
 
         #check loopback id is of valid format
         if type(loopback_id) is not int or loopback_id < 0 or loopback_id > 2147483647:
-            print("Invalid id for loopback interface")
-            return
+            return "Invalid id for loopback interface"
         
         #check loopback ip address is of valid format
         try:
             ip_address(loopback_ip)
         except(ValueError) as e:
-            print("%s: Invalid ip address for loopback interface" % (e.__class__))
-            return
+            return "%s: Invalid ip address for loopback interface" % (e.__class__)
 
         #check loopback subnet mask is of valid format
         try:
             ip_address(loopback_subnet_mask)
         except(ValueError) as e:
-            print("%s: Invalid subnet mask for loopback interface" % (e.__class__))
-            return
+            return "%s: Invalid subnet mask for loopback interface" % (e.__class__)
 
         # define function calling edit config, to be run if above tests pass. Decorator opens ssh connection
         @self._connect_ssh_decorator
@@ -139,7 +134,7 @@ class Router():
             '''
             Calls edit config with parameters to create/edit a loopback interface
             :param m: ncclient.manager.connect_ssh as m, passed through by decorator
-            :return: None
+            :return: m.edit_config(target = "running", config = conf, default_operation = "merge")
             '''
 
             m.edit_config(target = "running", config = conf, default_operation = "merge")
@@ -148,9 +143,9 @@ class Router():
             conf = configure_loopback_xml_renderer(loopback_id, loopback_ip, loopback_subnet_mask)
             if self.dry_run == 1:
                 return conf
-            configure_loopback_call_edit_config()
+            return configure_loopback_call_edit_config()
         except (RPCError) as e:
-            print("%s: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask" % (e.__class__))
+            return "%s: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask" % (e.__class__)
 
     @_test_host_port_decorator
     def delete_loopback(self, loopback_id):
@@ -158,13 +153,12 @@ class Router():
         Deletes a given loopback interface
         :param self: self
         :param loopback_id: id number for the loopback being deleted
-        :return: None
+        :return: delete_loopback_call_edit_config(), which calls m.edit_config(target = "running", config = conf, default_operation = "merge")
         '''
         
         #check loopback ip address is of valid format
         if type(loopback_id) is not int or loopback_id < 0 or loopback_id > 2147483647:
-            print("Invalid id for loopback interface")
-            return
+            return "Invalid id for loopback interface"
         
         #function calling edit config, to be run if above tests pass. Decorator opens ssh connection
         @self._connect_ssh_decorator
@@ -172,7 +166,7 @@ class Router():
             '''
             Calls edit config with parameters to delete a loopback interface
             :param m: ncclient.manager.connect_ssh as m, passed through by decorator
-            :return: None
+            :return: m.edit_config(target = "running", config = conf, default_operation = "merge")
             '''
 
             m.edit_config(target = "running", config = conf, default_operation = "merge")
@@ -181,16 +175,16 @@ class Router():
             conf = delete_loopback_xml_renderer(loopback_id)
             if self.dry_run == 1:
                 return conf
-            delete_loopback_call_edit_config()
+            return delete_loopback_call_edit_config()
         except (RPCError) as e:
-            print("%s: Interface deletion error - loopback id may not correspond with existing loopback interface" % e.__class__)
-    
+            return "%s: Interface deletion error - loopback id may not correspond with existing loopback interface" % e.__class__
+
     @_test_host_port_decorator
     def list_interfaces(self):
         '''
         Calls get config
         :param self: self
-        :return:
+        :return:list_interfaces_call_get_config(), which calls parseString(str(interface_xml)).toprettyxml()
         '''
         
         @self._connect_ssh_decorator
@@ -202,9 +196,12 @@ class Router():
             '''
 
             interface_xml = m.get(filter = ("subtree", conf))
-            print(parseString(str(interface_xml)).toprettyxml())
-        
+            return parseString(str(interface_xml)).toprettyxml()
+
         conf = list_interfaces_xml_renderer
         if self.dry_run == 1:
             return conf
-        list_interfaces_call_get_config()
+        return list_interfaces_call_get_config()
+
+router = Router("192.168.0.101", 830, "cisco", "cisco")
+print(router.list_interfaces())

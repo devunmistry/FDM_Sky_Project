@@ -1,8 +1,6 @@
 from unittest import mock, skip, TestCase
-from xml.dom.minidom import parseString
 
 from sky_project import Router
-from xml_functions.xml_function_delete_loopback import delete_loopback_xml_renderer
 
 class TestConfigureLoopback(TestCase):
 
@@ -38,40 +36,34 @@ class TestConfigureLoopback(TestCase):
                 device_params = {'name': 'csr'})
 
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithInvalidIPAddress(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.host = "invalid"
-            self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.0")
-            mocked_print.assert_called_once_with("<class 'ValueError'>: Invalid ip address for router socket")
+        self.router_a.host = "invalid"
+        result = self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.0")
+        assert result == "<class 'ValueError'>: Invalid ip address for router socket"
 
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithInvalidPort(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.port = "invalid"
-            self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.0")
-            mocked_print.assert_called_once_with("Invalid port for router socket")
+        self.router_a.port = "invalid"
+        result = self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.0")
+        assert result == "Invalid port for router socket"
 
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledButCannotEstablishSSHConnectionIPAddress(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.host = "192.168.0.100"
-            self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.0")
-            mocked_print.assert_called_once_with("<class 'ncclient.transport.errors.SSHError'>: Could not open router socket 192.168.0.100:830 - could be incorrect ip address and/or port number")
+        self.router_a.host = "192.168.0.100"
+        result = self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.0")
+        assert result == "<class 'ncclient.transport.errors.SSHError'>: Could not open router socket 192.168.0.100:830 - could be incorrect ip address and/or port number"
 
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledButCannotEstablishSSHConnectionPort(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.port = 800
-            self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.0")
-            mocked_print.assert_called_once_with("<class 'ncclient.transport.errors.SSHError'>: Could not open router socket 192.168.0.101:800 - could be incorrect ip address and/or port number")
-   
+        self.router_a.port = 800
+        result = self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.0")
+        assert result == "<class 'ncclient.transport.errors.SSHError'>: Could not open router socket 192.168.0.101:800 - could be incorrect ip address and/or port number"
+
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithIncorrectUsername(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.username = "incorrect"
-            self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.0")
-            mocked_print.assert_called_once_with("<class 'ncclient.transport.errors.AuthenticationError'>: Incorrect router SSH username and/or password")
+        self.router_a.username = "incorrect"
+        result = self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.0")
+        assert result == "<class 'ncclient.transport.errors.AuthenticationError'>: Incorrect router SSH username and/or password"
 
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithIncorrectPassword(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.password = "incorrect"
-            self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.0")
-            mocked_print.assert_called_once_with("<class 'ncclient.transport.errors.AuthenticationError'>: Incorrect router SSH username and/or password")
+        self.router_a.password = "incorrect"
+        result = self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.0")
+        assert result == "<class 'ncclient.transport.errors.AuthenticationError'>: Incorrect router SSH username and/or password"
 
     def test_configureLoopback_callsEditConfig_whenConfigureLoopbackCalledRouterALoopback1(self):
         with mock.patch("sky_project.manager.connect_ssh") as mocked_connect_ssh:
@@ -128,44 +120,36 @@ class TestConfigureLoopback(TestCase):
             mocked_connect_ssh.assert_has_calls(edit_config_call)
 
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithInvalidTextLoopbackID(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.configure_loopback("invalid", "192.168.1.1", "255.255.255.0")
-            mocked_print.assert_called_once_with("Invalid id for loopback interface")
+        result = self.router_a.configure_loopback("invalid", "192.168.1.1", "255.255.255.0")
+        assert result == "Invalid id for loopback interface"
 
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithInvalidNumLoopbackID(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.configure_loopback(-1, "192.168.1.1", "255.255.255.0")
-            mocked_print.assert_called_once_with("Invalid id for loopback interface")
+        result = self.router_a.configure_loopback(-1, "192.168.1.1", "255.255.255.0")
+        assert result == "Invalid id for loopback interface"
 
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithInvalidTextLoopbackIP(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.configure_loopback(1, "invalid", "255.255.255.0")
-            mocked_print.assert_called_once_with("<class 'ValueError'>: Invalid ip address for loopback interface")
+        result = self.router_a.configure_loopback(1, "invalid", "255.255.255.0")
+        assert result == "<class 'ValueError'>: Invalid ip address for loopback interface"
 
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithInvalidNumLoopbackIP(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.configure_loopback(1, "192.168.1", "255.255.255.0")
-            mocked_print.assert_called_once_with("<class 'ValueError'>: Invalid ip address for loopback interface")
+        result = self.router_a.configure_loopback(1, "192.168.1", "255.255.255.0")
+        assert result == "<class 'ValueError'>: Invalid ip address for loopback interface"
 
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithInvalidTextLoopbackSubnet(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.configure_loopback(1, "192.168.1.1", "invalid")
-            mocked_print.assert_called_once_with("<class 'ValueError'>: Invalid subnet mask for loopback interface")
+        result = self.router_a.configure_loopback(1, "192.168.1.1", "invalid")
+        assert result == "<class 'ValueError'>: Invalid subnet mask for loopback interface"
 
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithInvalidNumLoopbackSubnet(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255")
-            mocked_print.assert_called_once_with("<class 'ValueError'>: Invalid subnet mask for loopback interface")
+        result = self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255")
+        assert result == "<class 'ValueError'>: Invalid subnet mask for loopback interface"
 
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithIncorrectLoopbackIPAddress(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.configure_loopback(1, "192.168.0.1", "255.255.255.0")
-            mocked_print.assert_called_once_with("<class 'ncclient.operations.rpc.RPCError'>: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask")
+        result = self.router_a.configure_loopback(1, "192.168.0.1", "255.255.255.0")
+        assert result == "<class 'ncclient.operations.rpc.RPCError'>: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask"
 
     def test_configureLoopback_handlesException_whenConfigureLoopbackCalledWithIncorrectLoopbackSubnet(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.2")
-            mocked_print.assert_called_once_with("<class 'ncclient.operations.rpc.RPCError'>: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask")
+        result = self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.2")
+        assert result == "<class 'ncclient.operations.rpc.RPCError'>: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask"
 
 class TestDeleteLoopback(TestCase):
 
@@ -220,19 +204,16 @@ class TestDeleteLoopback(TestCase):
             mocked_connect_ssh.assert_has_calls(edit_config_call)
 
     def test_deleteLoopback_handlesException_whenDeleteLoopbackCalledWithInvalidTextLoopbackID(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.delete_loopback("one")
-            mocked_print.assert_called_once_with("Invalid id for loopback interface")
-    
+        result = self.router_a.delete_loopback("one")
+        assert result == "Invalid id for loopback interface"
+
     def test_deleteLoopback_handlesException_whenDeleteLoopbackCalledWithInvalidNumLoopbackID(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.delete_loopback(-1)
-            mocked_print.assert_called_once_with("Invalid id for loopback interface")
+        result = self.router_a.delete_loopback(-1)
+        assert result == "Invalid id for loopback interface"
 
     def test_deleteLoopback_handlesException_whenDeleteLoopbackCalledNonExistentLoopbackID(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.delete_loopback(2)
-            mocked_print.assert_called_once_with("<class 'ncclient.operations.rpc.RPCError'>: Interface deletion error - loopback id may not correspond with existing loopback interface")
+        result = self.router_a.delete_loopback(2)
+        assert result == "<class 'ncclient.operations.rpc.RPCError'>: Interface deletion error - loopback id may not correspond with existing loopback interface"
 
 class TestListInterfaces(TestCase):
 
@@ -286,17 +267,13 @@ class TestDryRun(TestCase):
         assert result == 0
     
     def test_dryRun_changeDryRunVariable_whenChangeDryRunVariableCalled(self):
-        with mock.patch("builtins.print") as mocked_print:
-            self.router_a.change_dry_run()
-            result = self.router_a.dry_run
-
-            assert result == 1
-            mocked_print.assert_called_once_with("dry_run = 1: Payload will be returned to user")
+        result = self.router_a.change_dry_run()
+        assert result == "dry_run = 1: Payload will be returned to user"
 
     def test_dryRun_returnsConf_whenConfigureLoopbackCalledWithDryRun1(self):
         self.router_a.change_dry_run()
         result = self.router_a.configure_loopback(1, "192.168.1.1", "255.255.255.0")
-        
+
         from xml_functions.xml_function_configure_loopback import configure_loopback_xml_renderer
         conf = configure_loopback_xml_renderer(1, "192.168.1.1", "255.255.255.0")
 
