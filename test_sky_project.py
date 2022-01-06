@@ -251,7 +251,7 @@ class TestListInterfaces(TestCase):
                 device_params = {'name': 'csr'})
 
     @skip("Mocked object prevents creation of string, leading to errors. Test not fully necessary, as the functions tested are also called successfully in later tests")
-    def test_listInterfaces_callsGet_whenDeleteLoopbackCalledRouterA(self):
+    def test_listInterfaces_callsGet_whenListInterfacesCalledRouterA(self):
         with mock.patch("ncclient.manager.connect_ssh") as mocked_connect_ssh:
             self.router_a.list_interfaces()
 
@@ -275,3 +275,9 @@ class TestListInterfaces(TestCase):
         with mock.patch("sky_project.parseString") as mocked_parseString:
             self.router_a.list_interfaces()
             mocked_parseString.assert_called()
+
+class TestDryRun(TestCase):
+    def test_dryRun_dryRunVariable0_whenRouterObjectCreated(self):
+        router_a = Router("192.168.0.101", 830, "cisco", "cisco")
+        result = router_a.dry_run
+        assert result == 0

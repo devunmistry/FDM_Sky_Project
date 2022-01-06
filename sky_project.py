@@ -16,6 +16,7 @@ class Router():
         self.port = port
         self.username = username
         self.password = password
+        self.dry_run = 0
 
     ####################
     ## Decorators     ##
