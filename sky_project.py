@@ -1,5 +1,5 @@
-from ipaddress import ip_address
 from functools import wraps
+from ipaddress import ip_address
 from ncclient import manager
 from ncclient.transport.errors import AuthenticationError, SSHError
 from ncclient.operations.rpc import RPCError 
@@ -143,7 +143,8 @@ class Router():
             conf = configure_loopback_xml_renderer(loopback_id, loopback_ip, loopback_subnet_mask)
             if self.dry_run == 1:
                 return conf
-            return configure_loopback_call_edit_config()
+            configure_loopback_call_edit_config()
+            return "Loopback%s configured." % loopback_id
         except (RPCError) as e:
             return "%s: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask" % (e.__class__)
 
@@ -175,7 +176,8 @@ class Router():
             conf = delete_loopback_xml_renderer(loopback_id)
             if self.dry_run == 1:
                 return conf
-            return delete_loopback_call_edit_config()
+            delete_loopback_call_edit_config()
+            return "Loopback%s deleted." % loopback_id
         except (RPCError) as e:
             return "%s: Interface deletion error - loopback id may not correspond with existing loopback interface" % e.__class__
 
@@ -202,6 +204,3 @@ class Router():
         if self.dry_run == 1:
             return conf
         return list_interfaces_call_get_config()
-
-router = Router("192.168.0.101", 830, "cisco", "cisco")
-print(router.list_interfaces())
