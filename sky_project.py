@@ -23,7 +23,7 @@ class Router():
     
     def _test_host_port_decorator(func):
         '''
-        Decorator. Tests the router host and port are of the correct format. Called before Class functions.
+        Decorator. Tests the router host and port are of the correct format. Should be called before Class functions.
         :param func: function to be wrapped within decorator.
         :return: test_host_port_decorator_wrapper
         '''
@@ -55,7 +55,7 @@ class Router():
 
     def _connect_ssh_decorator(self, func):
         '''
-        Decorator. Opens ssh connection with router. Called within Class functions.
+        Decorator. Opens ssh connection with router. Should be called within Class functions.
         :param self: self
         :param func: function to be wrapped within decorator
         :return: connect_ssh_decorator_wrapper
@@ -185,11 +185,7 @@ class Router():
             :return: xml of all listed interfaces
             '''
 
-            out = m.get(filter = ("subtree", list_interfaces_xml_renderer))
-            return out
-
-        interface_xml = _list_interfaces_call_get_config()
-        print(parseString(str(interface_xml)).toprettyxml())
-
-router = Router("192.168.0.101", 830, "cisco", "cisco")
-router.list_interfaces()
+            interface_xml = m.get(filter = ("subtree", list_interfaces_xml_renderer))
+            print(parseString(str(interface_xml)).toprettyxml())
+        
+        _list_interfaces_call_get_config()
