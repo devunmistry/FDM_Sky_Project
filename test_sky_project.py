@@ -277,16 +277,19 @@ class TestListInterfaces(TestCase):
             mocked_parseString.assert_called()
 
 class TestDryRun(TestCase):
+    def setUp(self):
+        self.router_a = Router("192.168.0.101", 830, "cisco", "cisco")
+
     def test_dryRun_dryRunVariable0_whenRouterObjectCreated(self):
-        router_a = Router("192.168.0.101", 830, "cisco", "cisco")
-        result = router_a.dry_run
+        result = self.router_a.dry_run
         assert result == 0
     
     def test_dryRun_changeDryRunVariable_whenChangeDryRunVariableCalled(self):
         with mock.patch("builtins.print") as mocked_print:
-            router_a = Router("192.168.0.101", 830, "cisco", "cisco")
-            router_a.change_dry_run()
-            result = router_a.dry_run
+            self.router_a.change_dry_run()
+            result = self.router_a.dry_run
 
             assert result == 1
             mocked_print.assert_called_once_with("dry_run = 1: Payload will be returned to user")
+
+    #def test_dryRun_returnsConf_whenConfigureLoopbackCalledWithDryRun1(self):

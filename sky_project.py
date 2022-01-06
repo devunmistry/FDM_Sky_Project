@@ -89,7 +89,7 @@ class Router():
         return connect_ssh_decorator_wrapper
 
     ####################
-    ## Class property-focused Methods ##
+    ## Class attribute focused Methods ##
     ####################
 
     def change_dry_run(self):
