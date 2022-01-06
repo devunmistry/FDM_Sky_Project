@@ -89,6 +89,17 @@ class Router():
         return connect_ssh_decorator_wrapper
 
     ####################
+    ## Class property-focused Methods ##
+    ####################
+
+    def change_dry_run(self):
+        self.dry_run = abs(self.dry_run - 1)
+        if self.dry_run == 0:
+            print("dry_run = 0: Payload will be sent to router")
+        if self.dry_run == 1:
+            print("dry_run = 1: Payload will be returned to user")
+
+    ####################
     ## Methods        ##
     ####################
 

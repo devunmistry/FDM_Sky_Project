@@ -281,3 +281,12 @@ class TestDryRun(TestCase):
         router_a = Router("192.168.0.101", 830, "cisco", "cisco")
         result = router_a.dry_run
         assert result == 0
+    
+    def test_dryRun_changeDryRunVariable_whenChangeDryRunVariableCalled(self):
+        with mock.patch("builtins.print") as mocked_print:
+            router_a = Router("192.168.0.101", 830, "cisco", "cisco")
+            router_a.change_dry_run()
+            result = router_a.dry_run
+
+            assert result == 1
+            mocked_print.assert_called_once_with("dry_run = 1: Payload will be returned to user")
