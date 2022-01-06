@@ -310,3 +310,12 @@ class TestDryRun(TestCase):
         conf = delete_loopback_xml_renderer(1)
 
         assert result == conf
+
+    def test_dryRun_returnsConf_whenListInterfacesCalledWithDryRun1(self):
+        self.router_a.change_dry_run()
+        result = self.router_a.list_interfaces()
+
+        from xml_functions.xml_function_list_interfaces import list_interfaces_xml_renderer
+        conf = list_interfaces_xml_renderer
+
+        assert result == conf

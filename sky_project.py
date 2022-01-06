@@ -201,7 +201,10 @@ class Router():
             :return: xml of all listed interfaces
             '''
 
-            interface_xml = m.get(filter = ("subtree", list_interfaces_xml_renderer))
+            interface_xml = m.get(filter = ("subtree", conf))
             print(parseString(str(interface_xml)).toprettyxml())
         
+        conf = list_interfaces_xml_renderer
+        if self.dry_run == 1:
+            return conf
         list_interfaces_call_get_config()
