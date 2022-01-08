@@ -27,4 +27,4 @@ def configure_loopback_xml_renderer(loopback_id, loopback_ip, loopback_subnet_ma
 </config>
 """ % (loopback_id, loopback_ip, loopback_subnet_mask)
 
-    return out
+    return str(out)

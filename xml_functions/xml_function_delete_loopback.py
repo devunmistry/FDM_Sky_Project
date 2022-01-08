@@ -17,4 +17,4 @@ def delete_loopback_xml_renderer(loopback_id):
 </config>
 """ % (loopback_id)
 
-    return out
+    return str(out)
