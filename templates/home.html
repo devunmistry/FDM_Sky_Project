@@ -1,0 +1,28 @@
+<html>
+<body>
+    <h1>Create Router Object</h1>
+    <form action = "create_router_object">
+       <label for="ip_address">IP Address</label>
+       <input type="text" name = "ip_address" value = "" required>
+       <label for="port">Port</label>
+       <input type="number" name = "port" value = "" required min = 1 max = 65535>
+       <label for="username">Username</label>
+       <input type="text" name="username" value="" required>
+       <label for="password">Password</label>
+       <input type="text" name="password" value="" required>
+       <input type="submit" value="Submit">
+    </form>
+    <br>
+    <br>
+    <h1>Existing Router Objects</h1>
+    {% for router in router_all_data %}
+        <link>
+        <a href = "/{{ router[0] }}">Router MYSQL Primary Key: {{ router[0] }}</p>
+        <p>Router IP Address: {{ router[1] }}</p></a>
+        </link>
+
+        <br>
+        <br>
+    {% endfor %}
+</body>
+</html>

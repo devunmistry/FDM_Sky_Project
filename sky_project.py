@@ -11,12 +11,12 @@ from xml_functions.xml_function_list_interfaces import list_interfaces_xml_rende
 
 class Router():
 
-    def __init__(self, host, port, username, password):
+    def __init__(self, host, port, username, password, dry_run):
         self.host = host
         self.port = port
         self.username = username
         self.password = password
-        self.dry_run = 0
+        self.dry_run = dry_run
 
     ####################
     ## Decorators     ##
@@ -90,12 +90,7 @@ class Router():
     ## Getters & setters ##
     ####################
 
-    def change_dry_run(self):
-        self.dry_run = abs(self.dry_run - 1)
-        if self.dry_run == 0:
-            return "dry_run = 0: Payload will be sent to router"
-        if self.dry_run == 1:
-            return "dry_run = 1: Payload will be returned to user"
+
 
     ####################
     ## Methods        ##
