@@ -1,7 +1,7 @@
 <html>
 <body>
    <h1>Configure Loopback</h1>
-   <form action = "/configure_loopback" method = "post">
+   <form action = "/configure_loopback">
       <label for="loopback_id">Loopback ID:</label>
       <input type="number" name = "loopback_id" value = "" required min = 0 max = 2147483647>
       <label for="loopback_ip">Loopback IP</label>
@@ -13,7 +13,7 @@
    <br>
    <br>
    <h1>Delete Loopback</h1>
-   <form action = "/delete_loopback" method = "post">
+   <form action = "/delete_loopback">
       <label for="loopback_id">Loopback ID:</label>
       <input type="number" name = "loopback_id" value = "" required min = 0 max = 2147483647>
       <input type="submit" value="Submit">
