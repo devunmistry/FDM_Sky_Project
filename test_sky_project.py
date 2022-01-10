@@ -5,8 +5,8 @@ from sky_project import Router
 class TestConfigureLoopback(TestCase):
 
     def setUp(self):
-        self.router_a = Router("192.168.0.101", 830, "cisco", "cisco")
-        self.router_b = Router("192.168.0.102", 830, "router", "router")
+        self.router_a = Router("192.168.0.101", 830, "cisco", "cisco", 0)
+        self.router_b = Router("192.168.0.102", 830, "router", "router", 0)
 
     def test_Router_createsRouterObject_whenRouterObjectInstantiated(self):
         result = isinstance(self.router_a, Router)
@@ -154,7 +154,7 @@ class TestConfigureLoopback(TestCase):
 class TestDeleteLoopback(TestCase):
 
     def setUp(self):
-        self.router_a = Router("192.168.0.101", 830, "cisco", "cisco")
+        self.router_a = Router("192.168.0.101", 830, "cisco", "cisco", 0)
 
     def test_deleteLoopback_callsNcclientManagerConnectssh_whenDeleteLoopbackCalledRouterA(self):
         with mock.patch("sky_project.manager") as mocked_manager:
@@ -218,7 +218,7 @@ class TestDeleteLoopback(TestCase):
 class TestListInterfaces(TestCase):
 
     def setUp(self):
-        self.router_a = Router("192.168.0.101", 830, "cisco", "cisco")
+        self.router_a = Router("192.168.0.101", 830, "cisco", "cisco", 0)
     
     @skip("Mocked object prevents creation of string, leading to errors. Test not fully necessary, as the functions tested are also called successfully in later tests")
     def test_listInterfaces_callsNcclientConnectssh_whenListInterfacesCalledRouterA(self):
@@ -260,7 +260,7 @@ class TestListInterfaces(TestCase):
 
 class TestDryRun(TestCase):
     def setUp(self):
-        self.router_a = Router("192.168.0.101", 830, "cisco", "cisco")
+        self.router_a = Router("192.168.0.101", 830, "cisco", "cisco", 0)
 
     def test_dryRun_dryRunVariable0_whenRouterObjectCreated(self):
         result = self.router_a.dry_run

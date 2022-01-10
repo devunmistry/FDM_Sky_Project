@@ -1,6 +1,6 @@
 <html>
 <body>
-    <h1>Create Router Object</h1>
+    <h1>Create Router MYSQL Entry</h1>
     <form action = "create_router_object">
        <label for="ip_address">IP Address</label>
        <input type="text" name = "ip_address" value = "" required>
@@ -14,7 +14,7 @@
     </form>
     <br>
     <br>
-    <h1>Existing Router Objects</h1>
+    <h1>Existing Router MYSQL Entries</h1>
     {% for router in router_all_data %}
         <link>
         <a href = "/{{ router[0] }}">Router MYSQL Primary Key: {{ router[0] }}</p>
