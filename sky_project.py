@@ -147,15 +147,13 @@ class Router():
             :param m: ncclient.manager.connect_ssh as m, passed through by decorator
             :return: m.edit_config(target = "running", config = conf, default_operation = "merge")
             '''
+            try:
+                m.edit_config(target = "running", config = conf, default_operation = "merge")
+                return "Loopback%s configured." % loopback_id
+            except (RPCError) as e:
+                return "%s: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask" % (e.__class__)
 
-            m.edit_config(target = "running", config = conf, default_operation = "merge")
-            return "Loopback%s configured." % loopback_id
-
-
-        try:
-            return configure_loopback_call_edit_config()
-        except (RPCError) as e:
-            return "%s: Loopback interface configuration error - various possible causes, including unavailable ip address or invalid subnet mask" % (e.__class__)
+        return configure_loopback_call_edit_config()
 
     @_test_host_port_decorator
     def delete_loopback(self, loopback_id):
@@ -180,14 +178,13 @@ class Router():
             :param m: ncclient.manager.connect_ssh as m, passed through by decorator
             :return: m.edit_config(target = "running", config = conf, default_operation = "merge")
             '''
+            try:
+                m.edit_config(target = "running", config = conf, default_operation = "merge")
+                return "Loopback%s deleted." % loopback_id
+            except (RPCError) as e:
+                return "%s: Interface deletion error - loopback id may not correspond with existing loopback interface" % e.__class__
 
-            m.edit_config(target = "running", config = conf, default_operation = "merge")
-            return "Loopback%s deleted." % loopback_id
-
-        try:
-            return delete_loopback_call_edit_config()
-        except (RPCError) as e:
-            return "%s: Interface deletion error - loopback id may not correspond with existing loopback interface" % e.__class__
+        return delete_loopback_call_edit_config()
 
     @_test_host_port_decorator
     def list_interfaces(self):
