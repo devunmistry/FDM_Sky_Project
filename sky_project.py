@@ -21,18 +21,18 @@ class Router():
     ####################
     ## Decorators     ##
     ####################
-    
-    def _test_host_port_decorator(func):
+
+    def _test_arguements_decorator(func):
         '''
-        Decorator. Tests the router host and port are of the correct format. Should be called before Class functions.
+        Decorator. Tests the router host and port are of the correct format. Also tests if given arguements (if applicable) are of the same format. Should be called before Class functions.
         :param func: function to be wrapped within decorator.
         :return: test_host_port_decorator_wrapper
         '''
 
         @wraps(func)
-        def test_host_port_decorator_wrapper(self, *args):
+        def test_arguements_decorator_wrapper(self, *args):
             '''
-            Decorator wrapper. Includes try/except for router host, and if statement for router port.
+            Decorator wrapper. Includes try/except for router host, and if statement for router port. Also includes if statement for interface_id and try/except for interface_ip and interface_subnet_mask, which are called if applicable
             :param self: self
             :param *args: arguements to be passed to wrapped function
             :return: func(*args)
@@ -47,16 +47,46 @@ class Router():
             #check router socket port is of valid format
             if type(self.port) is not int or self.port < 1 or self.port > 65535:
                 return "Invalid port for router socket"
+
+            try:
+                loopback_id = args[0]
+                if type(loopback_id) is not int or loopback_id < 0 or loopback_id > 2147483647:
+                    return "Invalid id for loopback interface"
+            except IndexError:
+                pass
+
+            try:
+                loopback_ip = args[1]
+                try:
+                    ip_address(loopback_ip)
+                except(ValueError) as e:
+                    return "%s: Invalid ip address for loopback interface" % (e.__class__)
+            except IndexError:
+                pass
+
+            try:
+                loopback_subnet_mask = args[2]
+                try:
+                    ip_address(loopback_subnet_mask)
+                except(ValueError) as e:
+                    return "%s: Invalid subnet mask for loopback interface" % (e.__class__)
+            except:
+                pass
             
             return func(self, *args)
         
-        return test_host_port_decorator_wrapper
+        return test_arguements_decorator_wrapper
 
     def _connect_ssh_decorator(self, xml_config):
+        '''Decorator. Allows for xml_config to be returned to user if dry_run == 1. Should be called within Class functions.
+        :param self: self
+        :param xml_config: xml_config string to be sent to router, or returned to user if dry_run == 1
+        :returns: connect_ssh_decorator_inner
+        '''
 
         def connect_ssh_decorator_inner(func):
             '''
-            Decorator. Opens ssh connection with router. Should be called within Class functions.
+            Decorator inner function. Opens ssh connection with router. 
             :param self: self
             :param func: function to be wrapped within decorator
             :return: connect_ssh_decorator_wrapper
@@ -110,7 +140,7 @@ class Router():
     ## Methods        ##
     ####################
 
-    @_test_host_port_decorator
+    @_test_arguements_decorator
     def configure_loopback(self, loopback_id, loopback_ip, loopback_subnet_mask):
         '''
         Configures a given loopback interface using given parameters
@@ -120,22 +150,6 @@ class Router():
         :param loopback_subnet_mask: subnet mask for the loopback being configured
         :return: configure_loopback_call_edit_config(), which calls m.edit_config(target = "running", config = conf, default_operation = "merge")
         '''
-
-        #check loopback id is of valid format
-        if type(loopback_id) is not int or loopback_id < 0 or loopback_id > 2147483647:
-            return "Invalid id for loopback interface"
-        
-        #check loopback ip address is of valid format
-        try:
-            ip_address(loopback_ip)
-        except(ValueError) as e:
-            return "%s: Invalid ip address for loopback interface" % (e.__class__)
-
-        #check loopback subnet mask is of valid format
-        try:
-            ip_address(loopback_subnet_mask)
-        except(ValueError) as e:
-            return "%s: Invalid subnet mask for loopback interface" % (e.__class__)
 
         conf = configure_loopback_xml_renderer(loopback_id, loopback_ip, loopback_subnet_mask)
 
@@ -155,7 +169,7 @@ class Router():
 
         return configure_loopback_call_edit_config()
 
-    @_test_host_port_decorator
+    @_test_arguements_decorator
     def delete_loopback(self, loopback_id):
         '''
         Deletes a given loopback interface
@@ -163,10 +177,6 @@ class Router():
         :param loopback_id: id number for the loopback being deleted
         :return: delete_loopback_call_edit_config(), which calls m.edit_config(target = "running", config = conf, default_operation = "merge")
         '''
-        
-        #check loopback ip address is of valid format
-        if type(loopback_id) is not int or loopback_id < 0 or loopback_id > 2147483647:
-            return "Invalid id for loopback interface"
 
         conf = delete_loopback_xml_renderer(loopback_id)
 
@@ -178,6 +188,7 @@ class Router():
             :param m: ncclient.manager.connect_ssh as m, passed through by decorator
             :return: m.edit_config(target = "running", config = conf, default_operation = "merge")
             '''
+            
             try:
                 m.edit_config(target = "running", config = conf, default_operation = "merge")
                 return "Loopback%s deleted." % loopback_id
@@ -186,7 +197,7 @@ class Router():
 
         return delete_loopback_call_edit_config()
 
-    @_test_host_port_decorator
+    @_test_arguements_decorator
     def list_interfaces(self):
         '''
         Calls get config
