@@ -1,7 +1,6 @@
-from flask import Flask, request, templating, url_for
+from flask import Flask, request
 
 from mysql_functions.mysql_function_create_router_object import create_router_object_mysql_connector
-from mysql_functions.mysql_function_pull_all_routers import pull_all_routers_mysql_connector
 from mysql_functions.mysql_function_pull_one_router import pull_one_router_mysql_connector
 from mysql_functions.mysql_function_change_router_dry_run import change_router_dry_run_mysql_connector
 
@@ -25,6 +24,9 @@ def app_configure_loopback(num):
     '''
     POST API: creates loopback interface for a given router
     :param num: router_id of router to be configured, references MYSQL primary key
+    :param loopback_id: loopback to be added
+    :param loopback_ip: ip address of loopback to be added
+    :param loopback_subnet_mask: subnet mask of loopback to be added
     :returns: Completed/error string
     '''
 
@@ -36,18 +38,37 @@ def app_configure_loopback(num):
 
 @app.route("/<num>/delete_loopback/", methods = ["DELETE"])
 def app_delete_loopback(num):
+    '''
+    DELETE API: deletes given loopback interface for given router
+    :param num: router_id of router to be configured, references MYSQL primary key
+    :param loopback_id: loopback to be deleted
+    :returns: Completed/error string
+    '''
+
     router_data = pull_one_router_mysql_connector(num)[0]
     router = Router(router_data[1], router_data[2], router_data[3], router_data[4], router_data[5])
     return router.delete_loopback(int(request.args["loopback_id"]))
 
 @app.route("/<num>/list_interfaces/", methods = ["GET"])
 def app_list_interfaces(num):
+    '''
+    GET API: gets all interfaces for given router
+    :param num: router_id of router to be configured, references MYSQL primary key
+    :returns: XML of all router interfaces
+    '''
+
     router_data = pull_one_router_mysql_connector(num)[0]
     router = Router(router_data[1], router_data[2], router_data[3], router_data[4], router_data[5])
     return router.list_interfaces()
 
-@app.route("/<num>/change_dry_run/", methods = ["GET"])
+@app.route("/<num>/change_dry_run/", methods = ["POST"])
 def app_change_dry_run(num):
+    '''
+    POST API: flips dry_run setting for given router
+    :param num: router_id of router to be configured, references MYSQL primary key
+    :returns: Completed/error string
+    '''
+
     router_data = pull_one_router_mysql_connector(num)[0]
     router = Router(router_data[1], router_data[2], router_data[3], router_data[4], router_data[5])
     

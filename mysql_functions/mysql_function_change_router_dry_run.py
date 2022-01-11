@@ -7,6 +7,7 @@ def change_router_dry_run_mysql_connector(router_id, dry_run):
     :param dry_run: new value of dry_run to be set
     :returns: new dry_run value
     '''
+    
     try:
         with connector.connect(host = 'localhost', user = 'root', password = 'root', database = "fdm_sky_project") as connect:
             cursor = connect.cursor()

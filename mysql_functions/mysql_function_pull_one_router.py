@@ -6,6 +6,7 @@ def pull_one_router_mysql_connector(router_id):
     :param router_id: primary key of router to be pulled
     :returns: all data as single tuple within a list
     '''
+    
     try:
         with connector.connect(host = 'localhost', user = 'root', password = 'root', database = "fdm_sky_project") as connect:
             cursor = connect.cursor()

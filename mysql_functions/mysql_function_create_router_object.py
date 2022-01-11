@@ -10,6 +10,7 @@ def create_router_object_mysql_connector(host, port, username, password):
     :param password: router ssh password
     :returns: String stating router has (not) been added to mysql table.
     '''
+    
     try:
         with connector.connect(host = 'localhost', user = 'root', password = 'root', database = "fdm_sky_project") as connect:
             cursor = connect.cursor()
