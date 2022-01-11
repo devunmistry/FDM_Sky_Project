@@ -22,7 +22,7 @@ class Router():
     ## Decorators     ##
     ####################
 
-    def _test_arguements_decorator(func):
+    def _check_arguements_decorator(func):
         '''
         Decorator. Tests the router host and port are of the correct format. Also tests if given arguements (if applicable) are of the same format. Should be called before Class functions.
         :param func: function to be wrapped within decorator.
@@ -30,7 +30,7 @@ class Router():
         '''
 
         @wraps(func)
-        def test_arguements_decorator_wrapper(self, *args):
+        def check_arguements_decorator_wrapper(self, *args):
             '''
             Decorator wrapper. Includes try/except for router host, and if statement for router port. Also includes if statement for interface_id and try/except for interface_ip and interface_subnet_mask, which are called if applicable
             :param self: self
@@ -75,7 +75,7 @@ class Router():
             
             return func(self, *args)
         
-        return test_arguements_decorator_wrapper
+        return check_arguements_decorator_wrapper
 
     def _connect_ssh_decorator(self, xml_config):
         '''Decorator. Allows for xml_config to be returned to user if dry_run == 1. Should be called within Class functions.
@@ -140,7 +140,7 @@ class Router():
     ## Methods        ##
     ####################
 
-    @_test_arguements_decorator
+    @_check_arguements_decorator
     def configure_loopback(self, loopback_id, loopback_ip, loopback_subnet_mask):
         '''
         Configures a given loopback interface using given parameters
@@ -169,7 +169,7 @@ class Router():
 
         return configure_loopback_call_edit_config()
 
-    @_test_arguements_decorator
+    @_check_arguements_decorator
     def delete_loopback(self, loopback_id):
         '''
         Deletes a given loopback interface
@@ -197,7 +197,7 @@ class Router():
 
         return delete_loopback_call_edit_config()
 
-    @_test_arguements_decorator
+    @_check_arguements_decorator
     def list_interfaces(self):
         '''
         Calls get config

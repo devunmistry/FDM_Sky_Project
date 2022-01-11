@@ -1,6 +1,6 @@
 from flask import Flask, request, templating, url_for
 
-from mysql_functions.mysql_function_add_router import add_router_mysql_connector
+from mysql_functions.mysql_function_create_router_object import create_router_object_mysql_connector
 from mysql_functions.mysql_function_pull_all_routers import pull_all_routers_mysql_connector
 from mysql_functions.mysql_function_pull_one_router import pull_one_router_mysql_connector
 from mysql_functions.mysql_function_change_router_dry_run import change_router_dry_run_mysql_connector
@@ -9,44 +9,44 @@ from sky_project import Router
 
 app = Flask(__name__)
 
-@app.route("/")
-def app_home():
-    router_all_data = pull_all_routers_mysql_connector()
-    return templating.render_template("home.html", router_all_data = router_all_data)
-
-@app.route("/create_router_object/")
+@app.route("/create_router_object/", methods = ["POST"])
 def app_create_router_object():
-    return add_router_mysql_connector(request.args["ip_address"], request.args["port"], request.args["username"], request.args["password"])
+    '''
+    POST API: creates router entry in MYSQL
+    :param router_object_arguements: json file containing host, port, username, password for router to be added
+    :returns: Completed/error string
+    '''
 
-@app.route("/<num>/", methods = ["GET", "POST"])
-def app_router_home(num):
-    return templating.render_template("router_home.html")
+    router_object_arguements = request.get_json()
+    return create_router_object_mysql_connector(router_object_arguements["host"], router_object_arguements["port"], router_object_arguements["username"], router_object_arguements["password"])
 
-@app.route("/<num>/configure_loopback/")
+@app.route("/<num>/configure_loopback/", methods = ["POST"])
 def app_configure_loopback(num):
-    if request.method == "GET":
-        router_data = pull_one_router_mysql_connector(num)[0]
-        router = Router(router_data[1], router_data[2], router_data[3], router_data[4], router_data[5])
-        return router.configure_loopback(int(request.args["loopback_id"]), request.args["loopback_ip"], request.args["loopback_subnet_mask"])
-    else:
-        return url_for("router_home")
+    '''
+    POST API: creates loopback interface for a given router
+    :param num: router_id of router to be configured, references MYSQL primary key
+    :returns: Completed/error string
+    '''
 
-@app.route("/<num>/delete_loopback/")
+    router_data = pull_one_router_mysql_connector(num)[0]
+    router = Router(router_data[1], router_data[2], router_data[3], router_data[4], router_data[5])
+
+    router_object_arguements = request.get_json()
+    return router.configure_loopback(router_object_arguements["loopback_id"], router_object_arguements["loopback_ip"], router_object_arguements["loopback_subnet_mask"])
+
+@app.route("/<num>/delete_loopback/", methods = ["DELETE"])
 def app_delete_loopback(num):
-    if request.method == "GET":
-        router_data = pull_one_router_mysql_connector(num)[0]
-        router = Router(router_data[1], router_data[2], router_data[3], router_data[4], router_data[5])
-        return router.delete_loopback(int(request.args["loopback_id"]))
-    else:
-        return url_for("router_home")
+    router_data = pull_one_router_mysql_connector(num)[0]
+    router = Router(router_data[1], router_data[2], router_data[3], router_data[4], router_data[5])
+    return router.delete_loopback(int(request.args["loopback_id"]))
 
-@app.route("/<num>/list_interfaces/", methods = ["GET", "POST"])
+@app.route("/<num>/list_interfaces/", methods = ["GET"])
 def app_list_interfaces(num):
     router_data = pull_one_router_mysql_connector(num)[0]
     router = Router(router_data[1], router_data[2], router_data[3], router_data[4], router_data[5])
     return router.list_interfaces()
 
-@app.route("/<num>/change_dry_run/", methods = ["GET", "POST"])
+@app.route("/<num>/change_dry_run/", methods = ["GET"])
 def app_change_dry_run(num):
     router_data = pull_one_router_mysql_connector(num)[0]
     router = Router(router_data[1], router_data[2], router_data[3], router_data[4], router_data[5])
