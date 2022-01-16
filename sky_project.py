@@ -11,12 +11,11 @@ from xml_functions.xml_function_list_interfaces import list_interfaces_xml_rende
 
 class Router():
 
-    def __init__(self, host, port, username, password, dry_run):
+    def __init__(self, host, port, username, password):
         self.host = host
         self.port = port
         self.username = username
         self.password = password
-        self.dry_run = dry_run
 
     ####################
     ## Decorators     ##
@@ -48,15 +47,17 @@ class Router():
             if type(self.port) is not int or self.port < 1 or self.port > 65535:
                 return "Invalid port for router socket"
 
+            print(args)
+
             try:
-                loopback_id = args[0]
+                loopback_id = args[1]
                 if type(loopback_id) is not int or loopback_id < 0 or loopback_id > 2147483647:
                     return "Invalid id for loopback interface"
             except IndexError:
                 pass
 
             try:
-                loopback_ip = args[1]
+                loopback_ip = args[2]
                 try:
                     ip_address(loopback_ip)
                 except(ValueError) as e:
@@ -65,7 +66,7 @@ class Router():
                 pass
 
             try:
-                loopback_subnet_mask = args[2]
+                loopback_subnet_mask = args[3]
                 try:
                     ip_address(loopback_subnet_mask)
                 except(ValueError) as e:
@@ -77,7 +78,7 @@ class Router():
         
         return check_arguements_decorator_wrapper
 
-    def _connect_ssh_decorator(self, xml_config):
+    def _connect_ssh_decorator(self, dry_run, xml_config):
         '''Decorator. Allows for xml_config to be returned to user if dry_run == 1. Should be called within Class functions.
         :param self: self
         :param xml_config: xml_config string to be sent to router, or returned to user if dry_run == 1
@@ -101,8 +102,8 @@ class Router():
                         m is ncclient.manager.connect_ssh
                 '''
 
-                #check if dry_run == 1 and return conf accordingly
-                if self.dry_run == 1:
+                #check if dry_run == True and return conf accordingly
+                if dry_run == True:
                     return xml_config
 
                 #establish connection with router
@@ -126,25 +127,15 @@ class Router():
         return connect_ssh_decorator_inner
 
     ####################
-    ## Getters & setters ##
-    ####################
-
-    def change_dry_run(self):
-        self.dry_run = abs(self.dry_run - 1)
-        if self.dry_run == 0:
-            return "dry_run = 0: Payload will be sent to router"
-        if self.dry_run == 1:
-            return "dry_run = 1: Payload will be returned to user"
-
-    ####################
     ## Methods        ##
     ####################
 
     @_check_arguements_decorator
-    def configure_loopback(self, loopback_id, loopback_ip, loopback_subnet_mask):
+    def configure_loopback(self, dry_run, loopback_id, loopback_ip, loopback_subnet_mask):
         '''
         Configures a given loopback interface using given parameters
         :param self: self
+        :param dry_run: auto set to False, so data sent to router. set to True as kwarg to return to user.
         :param loopback_id: id number for the loopback being configured
         :param loopback_ip: ip address for the loopback being configured
         :param loopback_subnet_mask: subnet mask for the loopback being configured
@@ -154,7 +145,7 @@ class Router():
         conf = configure_loopback_xml_renderer(loopback_id, loopback_ip, loopback_subnet_mask)
 
         # define function calling edit config, to be run if above tests pass. Decorator opens ssh connection, or returns conf
-        @self._connect_ssh_decorator(conf)
+        @self._connect_ssh_decorator(dry_run, conf)
         def configure_loopback_call_edit_config(m):
             '''
             Calls edit config with parameters to create/edit a loopback interface
@@ -170,18 +161,19 @@ class Router():
         return configure_loopback_call_edit_config()
 
     @_check_arguements_decorator
-    def delete_loopback(self, loopback_id):
+    def delete_loopback(self, dry_run, loopback_id):
         '''
         Deletes a given loopback interface
         :param self: self
         :param loopback_id: id number for the loopback being deleted
+        :param dry_run: auto set to False, to send data to router. set to True as kwarg to return to user.
         :return: delete_loopback_call_edit_config(), which calls m.edit_config(target = "running", config = conf, default_operation = "merge")
         '''
 
         conf = delete_loopback_xml_renderer(loopback_id)
 
         #function calling edit config, to be run if above tests pass. Decorator opens ssh connection
-        @self._connect_ssh_decorator(conf)
+        @self._connect_ssh_decorator(dry_run, conf)
         def delete_loopback_call_edit_config(m):
             '''
             Calls edit config with parameters to delete a loopback interface
@@ -198,17 +190,18 @@ class Router():
         return delete_loopback_call_edit_config()
 
     @_check_arguements_decorator
-    def list_interfaces(self):
+    def list_interfaces(self, dry_run):
         '''
         Calls get config
         :param self: self
+        :param dry_run: auto set to False, to send data to router. set to True as kwarg to return to user.
         :return:list_interfaces_call_get_config(), which calls parseString(str(interface_xml)).toprettyxml()
         '''
 
         conf = list_interfaces_xml_renderer
 
         #function calling edit config, to be run if above tests pass. Decorator opens ssh connection
-        @self._connect_ssh_decorator(conf)
+        @self._connect_ssh_decorator(dry_run, conf)
         def list_interfaces_call_get_config(m):
             '''
             Calls get config
